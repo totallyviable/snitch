@@ -1,0 +1,14 @@
+{
+  "name": "snitch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Totally Viable",
+  "license": "MIT",
+  "dependencies": {
+    "botkit": "0.0.5"
+  }
+}
