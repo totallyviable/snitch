@@ -1,7 +1,7 @@
 // init
 
 if (! process.env.SLACK_BOT_TOKEN) {
-    bot.botkit.error('Error: Specify SLACK_BOT_TOKEN in environment');
+    console.error('Error: Specify SLACK_BOT_TOKEN in environment');
     process.exit(1);
 }
 
