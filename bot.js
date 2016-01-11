@@ -1,7 +1,7 @@
 // init
 
 if (! process.env.SLACK_BOT_TOKEN) {
-    console.log('Error: Specify SLACK_BOT_TOKEN in environment');
+    bot.botkit.error('Error: Specify SLACK_BOT_TOKEN in environment');
     process.exit(1);
 }
 
@@ -21,7 +21,7 @@ var bot = controller.spawn({
 
 
 controller.on('ambient', function(bot, message){
-    console.log("[AMBIENT] " + message.text);
+    bot.botkit.log("[AMBIENT] " + message.text);
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -32,7 +32,7 @@ controller.on('ambient', function(bot, message){
 
 
 controller.on('me_message', function(bot, message){
-    console.log("[ME MESSAGE] /me " + message.text);
+    bot.botkit.log("[ME MESSAGE] /me " + message.text);
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -43,7 +43,7 @@ controller.on('me_message', function(bot, message){
 
 
 controller.on('message_changed', function(bot, message){
-    console.log("[MESSAGE CHANGED] " + util.inspect(message));
+    bot.botkit.log("[MESSAGE CHANGED] " + util.inspect(message));
 
     bot.api.reactions.add({
         timestamp: message.message.ts,
@@ -54,7 +54,7 @@ controller.on('message_changed', function(bot, message){
 
 
 controller.on('message_deleted', function(bot, message){
-    console.log("[MESSAGE DELETED] " + util.inspect(message));
+    bot.botkit.log("[MESSAGE DELETED] " + util.inspect(message));
 
     bot.startPrivateConversation(message.previous_message, function(err, dm){
         dm.say("I removed the message you deleted from the public record.");
@@ -63,7 +63,7 @@ controller.on('message_deleted', function(bot, message){
 
 
 controller.on('user_typing', function(bot, message){
-    console.log('[TYPING] ' + message.user);
+    bot.botkit.log('[TYPING] ' + message.user);
 });
 
 
