@@ -9,6 +9,9 @@
   "author": "Totally Viable",
   "license": "MIT",
   "dependencies": {
-    "botkit": "0.0.5"
+    "botkit": "0.0.5",
+    "express": "^4.13.3",
+    "socket.io": "^1.4.3",
+    "underscore": "^1.8.3"
   }
 }
