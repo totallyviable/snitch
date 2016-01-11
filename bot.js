@@ -1,7 +1,7 @@
 // init
 
-if (! process.env.token) {
-    console.log('Error: Specify token in environment');
+if (! process.env.SLACK_BOT_TOKEN) {
+    console.log('Error: Specify SLACK_BOT_TOKEN in environment');
     process.exit(1);
 }
 
@@ -14,7 +14,7 @@ var controller = Botkit.slackbot({
 });
 
 var bot = controller.spawn({
-    token: process.env.token
+    token: process.env.SLACK_BOT_TOKEN
 }).startRTM();
 
 // integrations
