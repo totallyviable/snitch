@@ -162,7 +162,13 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
-            var socket = io();
+            var websocket_host = "totallyviable-snitch.herokuapp.com";
+
+            if (window.location.hostname.indexOf('local') !== -1) {
+                websocket_host = window.location.host;
+            }
+
+            var socket = io.connect(websocket_host);
 
             var message_line = _.template($("#message_line").html());
 
