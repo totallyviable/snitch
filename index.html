@@ -5,8 +5,8 @@
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
         
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 
         <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
@@ -17,12 +17,37 @@
             }
             body {
                 font: 13px normal Helvetica, Arial, sans-serif;
-                padding: 10px;
+                padding: 30px 10px;
+                background: #f4fdfb;
+            }
+
+            a {
+                color: #19FFC2;
+                padding: 0 2px;
             }
 
             .flexbox {
                 display: flex;
                 flex-direction: row;
+            }
+
+            .navbar {
+                font-size: 18px;
+                background: #fff;
+            }
+
+                .navbar p {
+                    margin-left: 10px;
+                    margin-right: 10px;
+                }
+
+                .navbar .note {
+                    font-size: 14px;
+                    color: #bbb;
+                    font-style: italic;
+                }
+
+            #message_container {
             }
 
             .message {
@@ -45,7 +70,7 @@
 
                     .message .meta .timestamp {
                         margin-left: 7px;
-                        color: #ccc;
+                        color: #c3cac8;
                     }
 
                 .message .text {
@@ -57,20 +82,51 @@
             }
 
                 .divider .contents {
-                    border-bottom: 1px solid #eee;
+                    border-bottom: 1px solid rgba(0,0,0, 0.1);
                 }
         </style>
     </head>
     <body>
-        <div class="container" id="message_container">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-8">
+                    <div class="navbar navbar-default">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p style="margin-top: 25px;">
+                                        <b style="color: #000">Totally Viable</b> is project by
+                                        <a href="http://jacobbijani.com">Jacob</a>,
+                                        <a href="http://allanyu.nyc">Allan</a> &amp;
+                                        <a href="http://pasquale.cool">Pasquale</a>.
+
+                                        We’re designing and building ideas in public.
+
+                                        Here, you can creep on our Slack room.
+                                    </p>
+
+                                    <p class="note" style="margin-bottom: 20px;">
+                                        Messages will only appear while you have this window open… for now.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
         </div>
 
-        <script type="text/template" id="message_line">
+        <div class="container" id="message_container" style="display: none">
             <div class="row divider">
                 <div class="col-md-2"></div>
                 <div class="col-md-8 contents"></div>
                 <div class="col-md-2"></div>
             </div>
+        </div>
+
+        <script type="text/template" id="message_line">
             <div class="row message">
                 <div class="col-md-2"></div>
                 <div class="col-md-8 col-xs-12">
@@ -93,6 +149,11 @@
                 </div>
                 <div class="col-md-2"></div>
             </div>
+            <div class="row divider">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 contents"></div>
+                <div class="col-md-2"></div>
+            </div>
         </script>
 
         <script src="/socket.io/socket.io.js"></script>
@@ -103,13 +164,13 @@
             var message_line = _.template($("#message_line").html());
 
             socket.on('message', function(message){
-                $("#channel").text("ing on #" + message.channel.name)
+                $("#message_container").show();
 
                 $("#message_container").append(message_line({
                     timestamp: moment.unix(message.timestamp).format("h:mm a"),
                     username: message.user.name,
                     avatar: message.user.profile.image,
-                    text: message.text
+                    text: message.text.replace(/\n/g,"<br>")
                 }));
             });
         </script>
