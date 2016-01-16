@@ -98,7 +98,10 @@ controller.on('channel_leave', function(bot, message){
 controller.on('ambient', function(bot, message){
     bot.botkit.log("[AMBIENT] " + message.text);
 
+    var timestamp = message.ts.split(".")[0];
+
     io.emit('message', {
+        timestamp: timestamp,
         channel: sanitized_channel(message.channel),
         user: sanitized_user(message.user),
         text: message.text

@@ -1,28 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-        <title>Snitch chat</title>
+        <title>Totally Viable</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
+
         <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font: 13px Helvetica, Arial; }
-            form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-            form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-            form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-            #messages { list-style-type: none; margin: 0; padding: 0; }
-            #messages li { padding: 5px 10px; white-space: pre; font-family: monospace; }
-            #messages li:nth-child(odd) { background: #eee; }
+            * {
+                margin: 0; padding: 0; box-sizing: border-box;
+            }
+            body {
+                font: 13px normal Helvetica, Arial, sans-serif;
+                padding: 10px;
+            }
+
+            .flexbox {
+                display: flex;
+                flex-direction: row;
+            }
+
+            .message {
+            }
+
+                .message .avatar {
+                    display: block;
+                    border-radius: 5px;
+                    width: 50px;
+                    margin-right: 15px;
+                }
+
+                .message .meta {
+                    margin-bottom: 5px;
+                }
+
+                    .message .meta .username {
+                        font-weight: bold;
+                    }
+
+                    .message .meta .timestamp {
+                        margin-left: 7px;
+                        color: #ccc;
+                    }
+
+                .message .text {
+                    font-size: 18px;
+                }
+
+            .divider {
+                padding: 15px 0;
+            }
+
+                .divider .contents {
+                    border-bottom: 1px solid #eee;
+                }
         </style>
     </head>
     <body>
-        <ul id="messages"></ul>
+        <div class="container" id="message_container">
+        </div>
+
+        <script type="text/template" id="message_line">
+            <div class="row divider">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 contents"></div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row message">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 col-xs-12">
+                    <div class="flexbox">
+                        <div>
+                            <img src="<%= avatar %>" class="avatar"/>
+                        </div>
+
+                        <div>
+                            <div class="meta">
+                                <span class="username"><%= username %></span>
+                                <span class="timestamp"><%= timestamp %></span>
+                            </div>
+
+                            <div class="text">
+                                <%= text %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2"></div>
+            </div>
+        </script>
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
             var socket = io();
 
+            var message_line = _.template($("#message_line").html());
+
             socket.on('message', function(message){
-                $('#messages').append($('<li>').text(JSON.stringify(message, null, 4)));
+                $("#channel").text("ing on #" + message.channel.name)
+
+                $("#message_container").append(message_line({
+                    timestamp: moment.unix(message.timestamp).format("h:mm a"),
+                    username: message.user.name,
+                    avatar: message.user.profile.image,
+                    text: message.text
+                }));
             });
         </script>
     </body>
