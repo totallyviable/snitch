@@ -299,10 +299,15 @@ function sanitized_user(user){
         return { name: 'User' };
     }
 
-    user = _.pick(user, 'name', 'color', 'profile');
+    user = _.pick(user, 'name', 'color', 'profile', 'icons');
 
     user.profile = _.pick(user.profile, 'first_name', 'last_name', 'real_name', 'image_192');
-    user.profile.image = user.profile.image_192;
+
+    if (user.icons) {
+        user.profile.image = user.icons.image_72;
+    } else {
+        user.profile.image = user.profile.image_72;
+    }
 
     return user;
 }
