@@ -31,6 +31,7 @@ http.listen(process.env.PORT, function(){
 
 var cache = {
     users: {},
+    bots: {},
     channels: {},
 };
 
@@ -46,8 +47,8 @@ var bot = controller.spawn({
     token: process.env.SLACK_BOT_TOKEN
 }).startRTM(function(err, bot, res){
     if (err || ! res.ok) {
-        bot.botkit.log("Error caching startRTM payload.");
-        return;
+        console.log("Error with startRTM, crashing...");
+        process.exit(1);
     }
 
     cache.users = {};
@@ -56,7 +57,7 @@ var bot = controller.spawn({
     });
 
     _.each(res.bots, function(item){
-        cache.users[item.id] = item;
+        cache.bots[item.id] = item;
     });
 
     cache.channels = {};
@@ -111,7 +112,37 @@ controller.on('channel_leave', function(bot, message){
     // console.log(util.inspect(message));
 });
 
+controller.on('team_join', function(bot, message){
+    bot.botkit.log("[TEAM JOIN] " + message.user.name);
 
+    cache.users[message.user.id] = message.user;
+
+    // TODO: update clients
+});
+
+controller.on('user_change', function(bot, message){
+    bot.botkit.log("[USER CHANGE] " + message.user.name);
+
+    cache.users[message.user.id] = message.user;
+
+    // TODO: update clients
+});
+
+controller.on('bot_added', function(bot, message){
+    bot.botkit.log("[BOT ADDED] " + message.bot.name);
+
+    cache.bots[message.bot.id] = message.bot;
+
+    // TODO: update clients
+});
+
+controller.on('bot_changed', function(bot, message){
+    bot.botkit.log("[BOT UPDATED] " + message.bot.name);
+
+    cache.bots[message.bot.id] = message.bot;
+
+    // TODO: update clients
+});
 
 controller.on('ambient', function(bot, message){
     bot.botkit.log("[AMBIENT] " + message.text);
@@ -140,7 +171,7 @@ controller.on('bot_message', function(bot, message){
     io.emit('message', {
         timestamp: timestamp,
         channel: sanitized_channel(message.channel),
-        user: sanitized_user(message.bot_id),
+        user: sanitized_user(message.bot_id, message),
         text: reformat_message_text(message.text)
     });
 
@@ -291,22 +322,33 @@ function cache_list(variant) {
     });
 }
 
-function sanitized_user(user){
-    var user = cache.users[user];
+function sanitized_user(user, alt_payload){
+    var user = cache.users[user] || cache.bots[user];
 
     if (! user) {
-        bot.botkit.log("Could not find cached user");
-        return { name: 'User' };
+        bot.botkit.log("Could not find cached user: " + user);
+        return { name: 'Anonymous', profile: {} };
     }
 
-    user = _.pick(user, 'name', 'color', 'profile', 'icons');
+    user.is_bot = !! cache.bots[user.id];
 
-    user.profile = _.pick(user.profile, 'first_name', 'last_name', 'real_name', 'image_192');
+    user = _.pick(user, 'name', 'color', 'profile', 'icons', 'is_bot');
+
+    user.profile = _.pick(user.profile, 'first_name', 'last_name', 'real_name', 'image_72');
 
     if (user.icons) {
         user.profile.image = user.icons.image_72;
     } else {
         user.profile.image = user.profile.image_72;
+    }
+
+    // allow overriding cache with alt payload (e.g. from bot_message)
+    if (alt_payload && alt_payload.username) {
+        user.name = alt_payload.username;
+    }
+
+    if (alt_payload && _.size(_.omit(alt_payload.icons, "emoji")) > 0) {
+        user.profile.image = _.last(_.values(_.omit(alt_payload.icons, "emoji")));
     }
 
     return user;
@@ -316,8 +358,8 @@ function sanitized_channel(channel){
     var channel = cache.channels[channel];
     
     if (! channel) {
-        bot.botkit.log("Could not find cached channel");
-        return { name: '#channel' };
+        bot.botkit.log("Could not find cached channel: " + channel);
+        return { name: '#channel', members: {} };
     }
 
     channel = _.pick(channel, 'name', 'topic', 'members');

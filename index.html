@@ -115,6 +115,10 @@
                     margin-bottom: 5px;
                 }
 
+                    .message .meta * {
+                        display: inline-block;
+                    }
+
                     .message .meta .username {
                         font-weight: bold;
                     }
@@ -122,6 +126,15 @@
                     .message .meta .timestamp {
                         margin-left: 7px;
                         color: #c3cac8;
+                    }
+
+                    .message .meta .is_bot {
+                        background: #F7F7F7;
+                        color: #B4B4B4;
+                        padding: 2px 4px;
+                        margin-left: 7px;
+                        font-size: 0.75em;
+                        vertical-align: top;
                     }
 
                 .message .text {
@@ -201,6 +214,7 @@
                         <div>
                             <div class="meta">
                                 <span class="username"><%= username %></span>
+                                <% if (is_bot) { %><span class="is_bot">BOT</span><% } %>
                                 <span class="timestamp"><%= timestamp %></span>
                             </div>
 
@@ -236,6 +250,8 @@
             });
 
             socket.on('message', function(message){
+                console.log(message);
+
                 $("#message_container").show();
 
                 // emojify
@@ -245,6 +261,7 @@
                     timestamp: moment.unix(message.timestamp).format("h:mm a"),
                     username: message.user.name,
                     avatar: message.user.profile.image,
+                    is_bot: message.user.is_bot,
                     text: message.text
                 }));
             });
