@@ -1,7 +1,19 @@
 {
   "name": "snitch",
   "version": "1.0.0",
-  "description": "",
+  "description": "Let people spy on your Slack",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/totallyviable/snitch.git"
+  },
+  "keywords": [
+    "slack",
+    "bot",
+    "slackbot"
+  ],
+  "bugs": {
+    "url": "https://github.com/totallyviable/snitch/issues"
+  },
   "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
