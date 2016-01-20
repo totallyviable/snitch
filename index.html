@@ -178,7 +178,7 @@
                     timestamp: moment.unix(message.timestamp).format("h:mm a"),
                     username: message.user.name,
                     avatar: message.user.profile.image,
-                    text: message.text.replace(/\n/g,"<br>")
+                    text: message.text
                 }));
             });
         </script>

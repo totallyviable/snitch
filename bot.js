@@ -118,7 +118,7 @@ controller.on('ambient', function(bot, message){
         timestamp: timestamp,
         channel: sanitized_channel(message.channel),
         user: sanitized_user(message.user),
-        text: message.text
+        text: reformat_message_text(message.text)
     });
 
     bot.api.reactions.add({
@@ -217,7 +217,7 @@ controller.hears(['uptime'],'direct_message,direct_mention,mention',function(bot
         uptime = uptime / 60;
         unit = 'hour';
     }
-    
+
     if (uptime != 1) {
         unit = unit + 's';
     }
@@ -290,6 +290,56 @@ function sanitized_channel(channel){
     channel.members = members;
 
     return channel;
+}
+
+
+function reformat_message_text(text) {
+    // https://api.slack.com/docs/formatting
+    text = text.replace(/<([@#!])?([^>|]+)(?:\|([^>]+))?>/g, (function(_this) {
+        return function(m, type, link, label) {
+            var channel, user;
+
+            switch (type) {
+                case '@':
+                    if (label) return label;
+
+                    user = cache.users[link];
+
+                    if (user) return "@" + user.name;
+
+                    break;
+                case '#':
+                    if (label) return label;
+                    
+                    channel = cache.channels[link];
+                    
+                    if (channel) return "\#" + channel.name;
+                    
+                    break;
+                case '!':
+                    if (['channel','group','everyone','here'].indexOf(link) >= 0) {
+                        return "@" + link;
+                    }
+
+                    break;
+                default:
+                    if (label && -1 !== link.indexOf(label)) {
+                        return "<a href='" + link + "'>" + label + "</a>";
+                    } else {
+                        return "<a href='" + link + "'>" + link.replace(/^mailto:/, '') + "</a>";
+                    }
+            }
+        };
+    })(this));
+
+    // text = text.replace(/&lt;/g, '<');
+    // text = text.replace(/&gt;/g, '>');
+    // text = text.replace(/&amp;/g, '&');
+
+    // nl2br
+    text = text.replace(/\n/g, "<br/>");
+
+    return text;
 }
 
 function emoji_reaction_error_callback(err, res) {
