@@ -41,13 +41,27 @@ var controller = Botkit.slackbot({
 });
 
 var bot = controller.spawn({
+    simple_latest: true,
+    no_unreads: true,
     token: process.env.SLACK_BOT_TOKEN
-}).startRTM();
+}).startRTM(function(err, bot, res){
+    if (err || ! res.ok) {
+        bot.botkit.log("Error caching startRTM payload.");
+        return;
+    }
+
+    cache.users = {};
+    _.each(res.users, function(item){
+        cache.users[item.id] = item;
+    });
+
+    cache.channels = {};
+    _.each(res.channels, function(item){
+        cache.channels[item.id] = item;
+    });
+});
 
 // integrations
-
-cache_list('users');
-cache_list('channels');
 
 controller.on('channel_created', function(bot, message){
     cache_list('channels');
