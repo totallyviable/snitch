@@ -178,6 +178,11 @@
         </div>
 
         <script type="text/template" id="message_line">
+            <div class="row divider">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 contents"></div>
+                <div class="col-md-2"></div>
+            </div>
             <div class="row message">
                 <div class="col-md-2"></div>
                 <div class="col-md-8 col-xs-12">
@@ -198,11 +203,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2"></div>
-            </div>
-            <div class="row divider">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 contents"></div>
                 <div class="col-md-2"></div>
             </div>
         </script>
@@ -234,7 +234,7 @@
                 // emojify
                 message.text = emoji.replace_colons(message.text);
 
-                $("#message_container").append(message_line({
+                $("#message_container").prepend(message_line({
                     timestamp: moment.unix(message.timestamp).format("h:mm a"),
                     username: message.user.name,
                     avatar: message.user.profile.image,
