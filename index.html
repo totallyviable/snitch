@@ -75,8 +75,11 @@
             }
 
             .flexbox {
-                display: flex;
-                flex-direction: row;
+                display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+                display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+                display: -ms-flexbox;      /* TWEENER - IE 10 */
+                display: -webkit-flex;     /* NEW - Chrome */
+                display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
             }
 
             .navbar {
@@ -191,7 +194,7 @@
                 <div class="col-md-2"></div>
                 <div class="col-md-8 col-xs-12">
                     <div class="flexbox">
-                        <div>
+                        <div style="min-width:65px;">
                             <img src="<%= avatar %>" class="avatar"/>
                         </div>
 
