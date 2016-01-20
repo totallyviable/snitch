@@ -148,9 +148,24 @@ controller.on('bot_message', function(bot, message){
 });
 
 controller.on('me_message', function(bot, message){
-    bot.botkit.log("[ME MESSAGE] /me " + message.text);
+    message.text = "/me " + message.text;
 
-    // TODO: process like ambient messages
+    bot.botkit.log("[ME MESSAGE] " + message.text);
+
+    var timestamp = message.ts.split(".")[0];
+
+    io.emit('message', {
+        timestamp: timestamp,
+        channel: sanitized_channel(message.channel),
+        user: sanitized_user(message.user),
+        text: reformat_message_text(message.text)
+    });
+
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: 'white_small_square',
+    }, emoji_reaction_error_callback);
 });
 
 
@@ -356,6 +371,11 @@ function reformat_message_text(text) {
 
     // nl2br
     text = text.replace(/\n/g, "<br/>");
+
+    // me_message
+    if (text.indexOf("/me") === 0) {
+        text = "<span class='me_message'>" + text + "</span>";
+    }
 
     return text;
 }
