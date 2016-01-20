@@ -128,6 +128,24 @@ controller.on('ambient', function(bot, message){
     }, emoji_reaction_error_callback);
 });
 
+controller.on('bot_message', function(bot, message){
+    bot.botkit.log("[BOT MESSAGE] " + message.text);
+
+    var timestamp = message.ts.split(".")[0];
+
+    io.emit('message', {
+        timestamp: timestamp,
+        channel: sanitized_channel(message.channel),
+        user: sanitized_user(message.user),
+        text: reformat_message_text(message.text)
+    });
+
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: 'white_small_square',
+    }, emoji_reaction_error_callback);
+});
 
 controller.on('me_message', function(bot, message){
     bot.botkit.log("[ME MESSAGE] /me " + message.text);
