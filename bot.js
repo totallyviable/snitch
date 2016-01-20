@@ -55,6 +55,10 @@ var bot = controller.spawn({
         cache.users[item.id] = item;
     });
 
+    _.each(res.bots, function(item){
+        cache.users[item.id] = item;
+    });
+
     cache.channels = {};
     _.each(res.channels, function(item){
         cache.channels[item.id] = item;
@@ -136,7 +140,7 @@ controller.on('bot_message', function(bot, message){
     io.emit('message', {
         timestamp: timestamp,
         channel: sanitized_channel(message.channel),
-        user: sanitized_user(message.user),
+        user: sanitized_user(message.bot_id),
         text: reformat_message_text(message.text)
     });
 
