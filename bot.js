@@ -269,26 +269,28 @@ controller.on('user_typing', function(bot, message){
 
 io.on('connection', function (socket) {
     socket.on('request_backfill', function(data){
-        get_recent_messages("C0J4J68N4", 100, function(err, response){
-            if (err) throw err;
+        _.each(_.keys(cache.channels), function(channel_id){
+            get_recent_messages(channel_id, 100, function(err, response){
+                if (err) throw err;
 
-            _.each(response.reverse(), function(message){
-                var message = JSON.parse(message);
+                _.each(response.reverse(), function(message){
+                    var message = JSON.parse(message);
 
-                var timestamp = message.ts.split(".")[0];
+                    var timestamp = message.ts.split(".")[0];
 
-                var alt_payload = undefined;
+                    var alt_payload = undefined;
 
-                if (message.bot_id) {
-                    alt_payload = message;
-                }
+                    if (message.bot_id) {
+                        alt_payload = message;
+                    }
 
-                socket.emit('message', {
-                    is_backfill: true,
-                    timestamp: timestamp,
-                    channel: sanitized_channel(message.channel),
-                    user: sanitized_user(message.user || message.bot_id, alt_payload),
-                    text: reformat_message_text(message.text)
+                    socket.emit('message', {
+                        is_backfill: true,
+                        timestamp: timestamp,
+                        channel: sanitized_channel(message.channel),
+                        user: sanitized_user(message.user || message.bot_id, alt_payload),
+                        text: reformat_message_text(message.text)
+                    });
                 });
             });
         });
