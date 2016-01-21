@@ -77,11 +77,13 @@ controller.on('channel_created', function(bot, message){
     // TODO: update clients
 });
 
+
 controller.on('channel_deleted', function(bot, message){
     cache_list('channels');
 
     // TODO: update clients
 });
+
 
 controller.on('channel_rename', function(bot, message){
     cache_list('channels');
@@ -89,17 +91,20 @@ controller.on('channel_rename', function(bot, message){
     // TODO: update clients
 });
 
+
 controller.on('channel_archive', function(bot, message){
     cache_list('channels');
 
     // TODO: update clients
 });
 
+
 controller.on('channel_unarchive', function(bot, message){
     cache_list('channels');
 
     // TODO: update clients
 });
+
 
 controller.on('user_channel_join', function(bot, message){
     cache_list('channels');
@@ -108,12 +113,14 @@ controller.on('user_channel_join', function(bot, message){
     // console.log(util.inspect(message));
 });
 
+
 controller.on('channel_leave', function(bot, message){
     cache_list('channels');
 
     // TODO: update clients
     // console.log(util.inspect(message));
 });
+
 
 controller.on('team_join', function(bot, message){
     bot.botkit.log("[TEAM JOIN] " + message.user.name);
@@ -123,6 +130,7 @@ controller.on('team_join', function(bot, message){
     // TODO: update clients
 });
 
+
 controller.on('user_change', function(bot, message){
     bot.botkit.log("[USER CHANGE] " + message.user.name);
 
@@ -130,6 +138,7 @@ controller.on('user_change', function(bot, message){
 
     // TODO: update clients
 });
+
 
 controller.on('bot_added', function(bot, message){
     bot.botkit.log("[BOT ADDED] " + message.bot.name);
@@ -139,6 +148,7 @@ controller.on('bot_added', function(bot, message){
     // TODO: update clients
 });
 
+
 controller.on('bot_changed', function(bot, message){
     bot.botkit.log("[BOT UPDATED] " + message.bot.name);
 
@@ -146,6 +156,7 @@ controller.on('bot_changed', function(bot, message){
 
     // TODO: update clients
 });
+
 
 controller.on('ambient', function(bot, message){
     bot.botkit.log("[AMBIENT] " + message.text);
@@ -168,6 +179,7 @@ controller.on('ambient', function(bot, message){
     }, emoji_reaction_error_callback);
 });
 
+
 controller.on('bot_message', function(bot, message){
     bot.botkit.log("[BOT MESSAGE] " + message.text);
 
@@ -188,6 +200,7 @@ controller.on('bot_message', function(bot, message){
         name: 'white_small_square',
     }, emoji_reaction_error_callback);
 });
+
 
 controller.on('me_message', function(bot, message){
     message.text = "/me " + message.text;
@@ -215,6 +228,9 @@ controller.on('me_message', function(bot, message){
 
 controller.on('message_changed', function(bot, message){
     bot.botkit.log("[MESSAGE CHANGED] " + util.inspect(message));
+
+    // copy channel to actual message, so it won't get lost on edit
+    message.message.channel = message.channel;
 
     // TODO: update clients
 
@@ -251,7 +267,33 @@ controller.on('user_typing', function(bot, message){
 });
 
 
-// internal integrations
+io.on('connection', function (socket) {
+    socket.on('request_backfill', function(data){
+        get_recent_messages("C0J4J68N4", 100, function(err, response){
+            if (err) throw err;
+
+            _.each(response.reverse(), function(message){
+                var message = JSON.parse(message);
+
+                var timestamp = message.ts.split(".")[0];
+
+                var alt_payload = undefined;
+
+                if (message.bot_id) {
+                    alt_payload = message;
+                }
+
+                socket.emit('message', {
+                    is_backfill: true,
+                    timestamp: timestamp,
+                    channel: sanitized_channel(message.channel),
+                    user: sanitized_user(message.user || message.bot_id, alt_payload),
+                    text: reformat_message_text(message.text)
+                });
+            });
+        });
+    });
+});
 
 controller.on('tick', function(bot, message){});
 
@@ -312,6 +354,8 @@ controller.hears(['uptime'],'direct_message,direct_mention,mention',function(bot
 
 function save_message(channel_id, ts, message) {
     redis_client.zadd("channels." + channel_id, ts, JSON.stringify(message), redis.print);
+
+    // redis_client.zremrangebyscore("channels." + channel_id, ts, ts - (60 * 5)); // 86400
 }
 
 function update_message(channel_id, ts, message) {
@@ -323,7 +367,8 @@ function delete_message(channel_id, ts) {
     redis_client.zremrangebyscore("channels." + channel_id, ts, ts, redis.print);
 }
 
-function get_recent_messages(count) {
+function get_recent_messages(channel_id, count, callback) {
+    redis_client.zrevrangebyscore(["channels." + channel_id, "+inf", "-inf", "LIMIT", 0, count], callback)
 }
 
 function cache_list(variant) {
@@ -462,7 +507,7 @@ function reformat_message_text(text) {
 
 function emoji_reaction_error_callback(err, res) {
     if (err) {
-        bot.botkit.log('Failed to add emoji reaction :(', err);
+        bot.botkit.log('Failed to add emoji reaction :( ', err);
     }
 }
 

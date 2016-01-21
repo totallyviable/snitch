@@ -15,11 +15,14 @@
 
         <style>
             * {
-                margin: 0; padding: 0; box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
             }
+
             body {
                 font: 13px normal Helvetica, Arial, sans-serif;
-                padding: 30px 10px;
+                padding: 10px;
                 background: #f4fdfb;
             }
 
@@ -82,6 +85,14 @@
                 display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
             }
 
+            #navbar_container {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: #f4fdfb;
+            }
+
             .navbar {
                 font-size: 18px;
                 background: #fff;
@@ -97,6 +108,11 @@
                     color: #bbb;
                     font-style: italic;
                 }
+
+                    .navbar .note a, .navbar .note a:hover {
+                        color: inherit;
+                        text-decoration: underline;
+                    }
 
             #message_container {
             }
@@ -155,7 +171,15 @@
         </style>
     </head>
     <body>
-        <div class="container">
+        <div class="container" id="message_container" style="display: none">
+            <div class="row divider">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 contents"></div>
+                <div class="col-md-2"></div>
+            </div>
+        </div>
+
+        <div class="container-fluid" id="navbar_container">
             <div class="row">
                 <div class="col-md-2"></div>
                 <div class="col-md-8">
@@ -178,7 +202,7 @@
                                     </p>
 
                                     <p class="note" style="margin-bottom: 20px;">
-                                        Messages will only appear while you have this window open… for now. This is a work in progress.
+                                        This site is a work in progress. Let us know if you see any <a href="https://github.com/totallyviable/snitch">issues</a>.
                                     </p>
                                 </div>
                             </div>
@@ -189,26 +213,13 @@
             </div>
         </div>
 
-        <div class="container" id="message_container" style="display: none">
-            <div class="row divider">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 contents"></div>
-                <div class="col-md-2"></div>
-            </div>
-        </div>
-
         <script type="text/template" id="message_line">
-            <div class="row divider">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 contents"></div>
-                <div class="col-md-2"></div>
-            </div>
             <div class="row message">
                 <div class="col-md-2"></div>
                 <div class="col-md-8 col-xs-12">
                     <div class="flexbox">
                         <div style="min-width:65px;">
-                            <img src="<%= avatar %>" class="avatar"/>
+                            <img src="<%= avatar || 'https://slack.com/img/slack_hash_128.v1442100037.png' %>" class="avatar"/>
                         </div>
 
                         <div>
@@ -224,6 +235,11 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-2"></div>
+            </div>
+            <div class="row divider">
+                <div class="col-md-2"></div>
+                <div class="col-md-8 contents"></div>
                 <div class="col-md-2"></div>
             </div>
         </script>
@@ -249,6 +265,16 @@
                 $(this).html(emoji.replace_unified($(this).text()));
             });
 
+            function jump_to_page_bottom() {
+                $('html, body').scrollTop($(document).height());
+            }
+
+            function scroll_is_at_bottom() {
+                return ($(window).scrollTop() + $(window).height()) === $(document).height();
+            }
+
+            socket.emit('request_backfill', true);
+
             socket.on('message', function(message){
                 console.log(message);
 
@@ -257,13 +283,31 @@
                 // emojify
                 message.text = emoji.replace_colons(message.text);
 
-                $("#message_container").prepend(message_line({
+                var scroll_was_at_bottom = scroll_is_at_bottom() || message.is_backfill;
+
+                $("#message_container").append(message_line({
                     timestamp: moment.unix(message.timestamp).format("h:mm a"),
                     username: message.user.name,
                     avatar: message.user.profile.image,
                     is_bot: message.user.is_bot,
                     text: message.text
                 }));
+
+                if (scroll_was_at_bottom) {
+                    jump_to_page_bottom();
+                }
+            });
+
+            $(function(){
+                $("body").css({
+                    paddingBottom: $("#navbar_container").height() + parseInt($("body").css("paddingTop"))
+                });
+
+                $(window).resize(function(){
+                    $("body").css({
+                        paddingBottom: $("#navbar_container").height() + parseInt($("body").css("paddingTop"))
+                    });
+                });
             });
         </script>
 
