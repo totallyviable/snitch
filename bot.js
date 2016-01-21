@@ -163,11 +163,19 @@ controller.on('ambient', function(bot, message){
 
     var timestamp = message.ts.split(".")[0];
 
+    var text = reformat_message_text(message.text);
+
+    if (_.size(message.attachments) > 0) {
+        _.each(message.attachments, function(attachment){
+            text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+        });
+    }
+
     io.emit('message', {
         timestamp: timestamp,
         channel: sanitized_channel(message.channel),
         user: sanitized_user(message.user),
-        text: reformat_message_text(message.text)
+        text: text
     });
 
     save_message(message.channel, message.ts, message);
@@ -185,11 +193,19 @@ controller.on('bot_message', function(bot, message){
 
     var timestamp = message.ts.split(".")[0];
 
+    var text = reformat_message_text(message.text);
+
+    if (_.size(message.attachments) > 0) {
+        _.each(message.attachments, function(attachment){
+            text += "<br>" + attachment.fallback;
+        });
+    }
+
     io.emit('message', {
         timestamp: timestamp,
         channel: sanitized_channel(message.channel),
         user: sanitized_user(message.bot_id, message),
-        text: reformat_message_text(message.text)
+        text: text
     });
 
     save_message(message.channel, message.ts, message);
@@ -209,11 +225,19 @@ controller.on('me_message', function(bot, message){
 
     var timestamp = message.ts.split(".")[0];
 
+    var text = reformat_message_text(message.text);
+
+    if (_.size(message.attachments) > 0) {
+        _.each(message.attachments, function(attachment){
+            text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+        });
+    }
+
     io.emit('message', {
         timestamp: timestamp,
         channel: sanitized_channel(message.channel),
         user: sanitized_user(message.user),
-        text: reformat_message_text(message.text)
+        text: text
     });
 
     save_message(message.channel, message.ts, message);
@@ -278,6 +302,14 @@ io.on('connection', function (socket) {
 
                     var timestamp = message.ts.split(".")[0];
 
+                    var text = reformat_message_text(message.text);
+
+                    if (_.size(message.attachments) > 0) {
+                        _.each(message.attachments, function(attachment){
+                            text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+                        });
+                    }
+
                     var alt_payload = undefined;
 
                     if (message.bot_id) {
@@ -289,7 +321,7 @@ io.on('connection', function (socket) {
                         timestamp: timestamp,
                         channel: sanitized_channel(message.channel),
                         user: sanitized_user(message.user || message.bot_id, alt_payload),
-                        text: reformat_message_text(message.text)
+                        text: text
                     });
                 });
             });
