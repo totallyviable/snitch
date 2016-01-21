@@ -167,7 +167,9 @@ controller.on('ambient', function(bot, message){
 
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
-            text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+            if (attachment.fallback != "NO FALLBACK DEFINED") {
+                text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+            }
         });
     }
 
@@ -197,7 +199,9 @@ controller.on('bot_message', function(bot, message){
 
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
-            text += "<br>" + attachment.fallback;
+            if (attachment.fallback != "NO FALLBACK DEFINED") {
+                text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+            }
         });
     }
 
@@ -229,7 +233,9 @@ controller.on('me_message', function(bot, message){
 
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
-            text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+            if (attachment.fallback != "NO FALLBACK DEFINED") {
+                text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+            }
         });
     }
 
@@ -306,7 +312,9 @@ io.on('connection', function (socket) {
 
                     if (_.size(message.attachments) > 0) {
                         _.each(message.attachments, function(attachment){
-                            text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+                            if (attachment.fallback != "NO FALLBACK DEFINED") {
+                                text += "<blockquote class='attachment_fallback'>" + attachment.fallback + "</blockquote>";
+                            }
                         });
                     }
 
