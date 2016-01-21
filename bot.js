@@ -440,7 +440,7 @@ function sanitized_channel(channel){
 
     channel = _.pick(channel, 'name', 'topic', 'members');
 
-    channel.topic = channel.topic.value;
+    if (channel.topic) channel.topic = channel.topic.value;
 
     var members = {};
     _.each(channel.members, function(id){
