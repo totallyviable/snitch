@@ -139,6 +139,7 @@
                         font-weight: bold;
                     }
 
+                    .message .meta .channel,
                     .message .meta .timestamp {
                         margin-left: 7px;
                         color: #c3cac8;
@@ -225,6 +226,7 @@
                         <div>
                             <div class="meta">
                                 <span class="username"><%= username %></span>
+                                <span class="channel"><%= channel %></span>
                                 <% if (is_bot) { %><span class="is_bot">BOT</span><% } %>
                                 <span class="timestamp"><%= timestamp %></span>
                             </div>
@@ -287,6 +289,7 @@
 
                 $("#message_container").append(message_line({
                     timestamp: moment.unix(message.timestamp).format("h:mm a"),
+                    channel: "#" + message.channel.name,
                     username: message.user.name,
                     avatar: message.user.profile.image,
                     is_bot: message.user.is_bot,

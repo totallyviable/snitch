@@ -435,7 +435,7 @@ function sanitized_channel(channel){
     
     if (! channel) {
         bot.botkit.log("Could not find cached channel: " + channel);
-        return { name: '#channel', members: {} };
+        return { name: 'channel', members: {} };
     }
 
     channel = _.pick(channel, 'name', 'topic', 'members');
