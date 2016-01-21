@@ -19,6 +19,9 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var redis = require('redis'),
+    redis_client = redis.createClient(process.env.REDIS_URL);
+
 // web server
 
 app.get('/', function(req, res){
@@ -156,6 +159,8 @@ controller.on('ambient', function(bot, message){
         text: reformat_message_text(message.text)
     });
 
+    save_message(message.channel, message.ts, message);
+
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
@@ -174,6 +179,8 @@ controller.on('bot_message', function(bot, message){
         user: sanitized_user(message.bot_id, message),
         text: reformat_message_text(message.text)
     });
+
+    save_message(message.channel, message.ts, message);
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -196,6 +203,8 @@ controller.on('me_message', function(bot, message){
         text: reformat_message_text(message.text)
     });
 
+    save_message(message.channel, message.ts, message);
+
     bot.api.reactions.add({
         timestamp: message.ts,
         channel: message.channel,
@@ -209,6 +218,8 @@ controller.on('message_changed', function(bot, message){
 
     // TODO: update clients
 
+    update_message(message.channel, message.message.ts, message.message);
+
     bot.api.reactions.add({
         timestamp: message.message.ts,
         channel: message.channel,
@@ -221,6 +232,8 @@ controller.on('message_deleted', function(bot, message){
     bot.botkit.log("[MESSAGE DELETED] " + util.inspect(message));
 
     // TODO: update clients
+
+    delete_message(message.channel, message.deleted_ts);
 
     bot.startPrivateConversation(message.previous_message, function(err, dm){
         dm.say("I removed the message you deleted from the public record.");
@@ -296,6 +309,22 @@ controller.hears(['uptime'],'direct_message,direct_mention,mention',function(bot
 });
 
 // helpers
+
+function save_message(channel_id, ts, message) {
+    redis_client.zadd("channels." + channel_id, ts, JSON.stringify(message), redis.print);
+}
+
+function update_message(channel_id, ts, message) {
+    delete_message(channel_id, ts);
+    redis_client.zadd("channels." + channel_id, ts, JSON.stringify(message), redis.print);
+}
+
+function delete_message(channel_id, ts) {
+    redis_client.zremrangebyscore("channels." + channel_id, ts, ts, redis.print);
+}
+
+function get_recent_messages(count) {
+}
 
 function cache_list(variant) {
     var options = {
