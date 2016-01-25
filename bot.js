@@ -334,6 +334,8 @@ io.on('connection', function (socket) {
                 });
             });
         });
+
+        socket.emit('backfill_complete', true);
     });
 });
 

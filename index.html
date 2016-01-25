@@ -289,41 +289,58 @@
                 return ($(window).scrollTop() + $(window).height()) === $(document).height();
             }
 
-            socket.emit('request_backfill', true);
-
-            socket.on('message', function(message){
-                console.log(message);
-
-                $("#message_container").show();
-
-                // emojify
-                message.text = emoji.replace_colons(message.text);
-
-                var scroll_was_at_bottom = scroll_is_at_bottom() || message.is_backfill;
-
-                $("#message_container").append(message_line({
-                    timestamp: moment.unix(message.timestamp).format("h:mm a"),
-                    channel: "#" + message.channel.name,
-                    username: message.user.name,
-                    avatar: message.user.profile.image,
-                    is_bot: message.user.is_bot,
-                    text: message.text
-                }));
-
-                if (scroll_was_at_bottom) {
-                    jump_to_page_bottom();
-                }
-            });
-
             $(function(){
                 $("body").css({
                     paddingBottom: $("#navbar_container").height() + parseInt($("body").css("paddingTop"))
                 });
 
+                var scroll_buffer = $("#navbar_container").height();
+
                 $(window).resize(function(){
+                    scroll_buffer = $("#navbar_container").height();
+
                     $("body").css({
                         paddingBottom: $("#navbar_container").height() + parseInt($("body").css("paddingTop"))
                     });
+                });
+
+                var backfill_complete = false;
+                socket.emit('request_backfill', true);
+
+                socket.on('backfill_complete', function(message){
+                    backfill_complete = true;
+                    
+                    setInterval(function(){
+                        if ((window.innerHeight + window.scrollY + scroll_buffer) >= document.body.offsetHeight) {
+                            $("#navbar_container").show();
+                        } else {
+                            $("#navbar_container").fadeOut();
+                        }
+                    }, 200);
+                });
+
+                socket.on('message', function(message){
+                    console.log(message);
+
+                    $("#message_container").show();
+
+                    // emojify
+                    message.text = emoji.replace_colons(message.text);
+
+                    var scroll_was_at_bottom = scroll_is_at_bottom() || message.is_backfill;
+
+                    $("#message_container").append(message_line({
+                        timestamp: moment.unix(message.timestamp).format("h:mm a"),
+                        channel: "#" + message.channel.name,
+                        username: message.user.name,
+                        avatar: message.user.profile.image,
+                        is_bot: message.user.is_bot,
+                        text: message.text
+                    }));
+
+                    if (scroll_was_at_bottom) {
+                        jump_to_page_bottom();
+                    }
                 });
             });
         </script>
