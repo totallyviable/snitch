@@ -300,7 +300,7 @@ controller.on('user_typing', function(bot, message){
 io.on('connection', function (socket) {
     socket.on('request_backfill', function(data){
         _.each(_.keys(cache.channels), function(channel_id){
-            get_recent_messages(channel_id, 100, function(err, response){
+            get_recent_messages(channel_id, 300, function(err, response){
                 if (err) throw err;
 
                 _.each(response.reverse(), function(message){
