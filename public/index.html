@@ -4,7 +4,8 @@
         <title>Totally Viable</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        
+        <link rel="icon" type="image/png" href="/favicon.ico">
+
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap-theme.min.css" crossorigin="anonymous">
 
@@ -24,7 +25,7 @@
             body {
                 font: 13px normal Helvetica, Arial, sans-serif;
                 padding: 10px;
-                background: #f4fdfb;
+                background: #f4fdfb center fixed no-repeat url('/tv-bg-squiggle-matte.png');
             }
 
             a, a:hover {
@@ -309,7 +310,7 @@
 
                 socket.on('backfill_complete', function(message){
                     backfill_complete = true;
-                    
+
                     setInterval(function(){
                         if ((window.innerHeight + window.scrollY + scroll_buffer) >= document.body.offsetHeight) {
                             $("#navbar_container").show();

@@ -15,7 +15,8 @@ var _ = require('underscore');
 
 var Botkit = require('botkit');
 
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
@@ -24,9 +25,7 @@ var redis = require('redis'),
 
 // web server
 
-app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
-});
+app.use(express.static('public'));
 
 http.listen(process.env.PORT, function(){
     console.log('listening on port ' + process.env.PORT);
