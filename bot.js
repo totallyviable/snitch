@@ -1,26 +1,3 @@
-function _log(){
-    console.log.apply(console, arguments);
-}
-
-function _error(){
-    console.error.apply(console, arguments);
-}
-
-function _debug(){
-    console.debug.apply(console, arguments);
-}
-
-// init
-
-if (! process.env.SLACK_BOT_TOKEN) {
-    _error('Error: Specify SLACK_BOT_TOKEN in environment');
-    process.exit(1);
-}
-
-if (! process.env.PORT) {
-    process.env.PORT = 3000;
-}
-
 var os = require('os');
 var util = require('util');
 var _ = require('underscore');
@@ -35,7 +12,27 @@ var io = require('socket.io')(http);
 var redis = require('redis'),
     redis_client = redis.createClient(process.env.REDIS_URL);
 
+// logs
+
+function _log(){
+    console.log.apply(console, arguments);
+}
+
+function _error(){
+    console.error.apply(console, arguments);
+}
+
+function _dump(){
+    _.each(arguments, function(arg){
+        _log(util.inspect(arg));
+    });
+}
+
 // web server
+
+if (! process.env.PORT) {
+    process.env.PORT = 3000;
+}
 
 app.use(express.static('public'));
 
@@ -50,6 +47,11 @@ var cache = {
 };
 
 // slackbot
+
+if (! process.env.SLACK_BOT_TOKEN) {
+    _error('Error: Specify SLACK_BOT_TOKEN in environment');
+    process.exit(1);
+}
 
 var controller = Botkit.slackbot({
     debug: true,
