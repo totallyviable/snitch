@@ -1,7 +1,19 @@
+function _log(){
+    console.log.apply(console, arguments);
+}
+
+function _error(){
+    console.error.apply(console, arguments);
+}
+
+function _debug(){
+    console.debug.apply(console, arguments);
+}
+
 // init
 
 if (! process.env.SLACK_BOT_TOKEN) {
-    console.error('Error: Specify SLACK_BOT_TOKEN in environment');
+    _error('Error: Specify SLACK_BOT_TOKEN in environment');
     process.exit(1);
 }
 
@@ -28,7 +40,7 @@ var redis = require('redis'),
 app.use(express.static('public'));
 
 http.listen(process.env.PORT, function(){
-    console.log('listening on port ' + process.env.PORT);
+    _log('listening on port ' + process.env.PORT);
 });
 
 var cache = {
@@ -49,7 +61,7 @@ var bot = controller.spawn({
     token: process.env.SLACK_BOT_TOKEN
 }).startRTM(function(err, bot, res){
     if (err || ! res.ok) {
-        console.log("Error with startRTM, crashing...");
+        _error("Error with startRTM, crashing...");
         process.exit(1);
     }
 
@@ -109,7 +121,7 @@ controller.on('user_channel_join', function(bot, message){
     cache_list('channels');
 
     // TODO: update clients
-    // console.log(util.inspect(message));
+    // _log(util.inspect(message));
 });
 
 
@@ -117,7 +129,7 @@ controller.on('channel_leave', function(bot, message){
     cache_list('channels');
 
     // TODO: update clients
-    // console.log(util.inspect(message));
+    // _log(util.inspect(message));
 });
 
 
@@ -435,7 +447,7 @@ function cache_list(variant) {
             cache[options.api_method][item.id] = item;
         });
 
-        // console.log(util.inspect(cache[options.api_method]));
+        // _log(util.inspect(cache[options.api_method]));
     });
 }
 

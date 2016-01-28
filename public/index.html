@@ -15,6 +15,28 @@
         <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
         <script src="//cdn.rawgit.com/iamcal/js-emoji/e93c4cb/lib/emoji.min.js"></script>
 
+        <script>
+            var enable_logging = true;
+
+            function _log(){
+                if (enable_logging && window.console && window.console.log) {
+                    window.console.log.apply(window.console, arguments);
+                }
+            }
+
+            function _error(){
+                if (enable_logging && window.console && window.console.error) {
+                    window.console.error.apply(window.console, arguments);
+                }
+            }
+            
+            function _debug(){
+                if (enable_logging && window.console && window.console.debug) {
+                    window.console.debug.apply(window.console, arguments);
+                }
+            }
+        </script>
+
         <style>
             * {
                 margin: 0;
@@ -325,7 +347,7 @@
                 });
 
                 socket.on('message', function(message){
-                    console.log(message);
+                    _log(message);
 
                     $("#message_container").show();
 
