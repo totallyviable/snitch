@@ -42,18 +42,25 @@ http.listen(process.env.PORT, function(){
     _log('listening on port ' + process.env.PORT);
 });
 
-app.get("/file/:file_id/:name", function(req, res){
-    var url = "https://files.slack.com/files-pri/" + bot.team_info['id'] + "-" + req.params.file_id + "/" + req.params.name;
+app.get("/file/:file_id/:variant.:ext?", function(req, res){
+    get_file(req.params.file_id, function(err, file){
+        file = JSON.parse(file);
 
-    // TODO: handle request errors better
-    // TODO: check if file mode is hosted or external
-
-    request({
-        url: url,
-        headers: {
-            'Authorization': 'Bearer ' + bot.config.token
+        if (err || ! file) {
+            return request('https://slack-imgs.com/?url=null&width=360&height=250').pipe(res);
         }
-    }).pipe(res);
+
+        // TODO: check if file mode is hosted or external
+
+        var url = file[req.params.variant];
+
+        request({
+            url: url,
+            headers: {
+                'Authorization': 'Bearer ' + bot.config.token
+            }
+        }).pipe(res);
+    });
 });
 
 var cache = {
@@ -194,10 +201,6 @@ controller.on('ambient', function(bot, message){
 
     var text = reformat_message_text(message.text);
 
-    if (message.file) {
-        text = format_message_text_from_file(message);
-    }
-
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
             if (attachment.fallback != "NO FALLBACK DEFINED") {
@@ -230,8 +233,9 @@ controller.on('bot_message', function(bot, message){
 
     var text = reformat_message_text(message.text);
 
+    // TODO: check if this is possible
     if (message.file) {
-        text = format_message_text_from_file(message);
+        text = format_message_text_from_file(message.file);
     }
 
     if (_.size(message.attachments) > 0) {
@@ -268,10 +272,6 @@ controller.on('me_message', function(bot, message){
 
     var text = reformat_message_text(message.text);
 
-    if (message.file) {
-        text = format_message_text_from_file(message);
-    }
-
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
             if (attachment.fallback != "NO FALLBACK DEFINED") {
@@ -306,6 +306,10 @@ controller.on('message_changed', function(bot, message){
     // TODO: update clients
 
     update_message(message.channel, message.message.ts, message.message);
+
+    if (message.file) {
+        update_file(message.file);
+    }
 
     bot.api.reactions.add({
         timestamp: message.message.ts,
@@ -343,7 +347,7 @@ controller.on('file_share', function(bot, message){
 
     var timestamp = message.ts.split(".")[0];
 
-    var text = format_message_text_from_file(message);
+    var text = format_message_text_from_file(message.file);
 
     io.emit('message', {
         timestamp: timestamp,
@@ -354,6 +358,8 @@ controller.on('file_share', function(bot, message){
 
     save_message(message.channel, message.ts, message);
 
+    save_file(message.file);
+
     bot.api.reactions.add({
         file: message.file.id,
         name: 'white_small_square',
@@ -363,11 +369,20 @@ controller.on('file_share', function(bot, message){
 
 controller.on('file_change', function(bot, message){
     _dump("[file_change]", message);
+
+    update_file(message.file);
+
+    bot.api.reactions.add({
+        file: message.file.id,
+        name: 'small_orange_diamond',
+    }, emoji_reaction_error_callback);
 });
 
 
 controller.on('file_deleted', function(bot, message){
     _dump("[file_deleted]", message);
+
+    delete_file(message.file_id);
 });
 
 
@@ -385,7 +400,7 @@ io.on('connection', function (socket) {
                     var text = reformat_message_text(message.text);
 
                     if (message.file) {
-                        text = format_message_text_from_file(message);
+                        text = format_message_text_from_file(message.file);
                     }
 
                     if (_.size(message.attachments) > 0) {
@@ -480,17 +495,34 @@ function save_message(channel_id, ts, message) {
     // redis_client.zremrangebyscore("channels." + channel_id, ts, ts - (60 * 5)); // 86400
 }
 
-function update_message(channel_id, ts, message) {
-    delete_message(channel_id, ts);
-    redis_client.zadd("channels." + channel_id, ts, JSON.stringify(message), redis.print);
-}
-
 function delete_message(channel_id, ts) {
     redis_client.zremrangebyscore("channels." + channel_id, ts, ts, redis.print);
 }
 
+function update_message(channel_id, ts, message) {
+    delete_message(channel_id, ts);
+    save_message(channel_id, ts, message);
+}
+
 function get_recent_messages(channel_id, count, callback) {
     redis_client.zrevrangebyscore(["channels." + channel_id, "+inf", "-inf", "LIMIT", 0, count], callback)
+}
+
+function save_file(file) {
+    redis_client.set("files." + file.id, JSON.stringify(file), redis.print);
+}
+
+function delete_file(file_id) {
+    redis_client.del("files." + file_id, redis.print);
+}
+
+function update_file(file) {
+    delete_file(file.id);
+    save_file(file);
+}
+
+function get_file(file_id, callback) {
+    redis_client.get("files." + file_id, callback)
 }
 
 function cache_list(variant) {
@@ -572,46 +604,53 @@ function sanitized_channel(channel){
     return channel;
 }
 
-function format_message_text_from_file(message) {
-    if (! message.file) {
+function format_message_text_from_file(file) {
+    if (! file) {
         return false;
-    }
-
-    if (message.file.mode != "hosted") {
-        return "shared an unsupported file type (" + message.file.pretty_type + "). Sorry!";
     }
 
     // =====
 
-    var text = "uploaded ";
+    var text = "<span class='uploaded_file_message'>";
 
-    if (message.file.initial_comment) {
+    text += " uploaded ";
+
+    if (file.initial_comment) {
         text += " and commented on ";
     }
 
-    if (message.file.mode == "hosted") {
-        if (s.startsWith(message.file.mimetype, "image/")) {
+    if (file.mode == "hosted") {
+        if (s.startsWith(file.mimetype, "image/")) {
             text += " an image: ";
         } else {
             text += " a file: ";
         }
+    } else {
+        // TODO: proper indefinite article
+        text += " a " + file.pretty_type + " file: ";
     }
 
-    text += " <spam class='uploaded_file_name'>" + message.file.name + "</span> "
+    text += " <spam class='uploaded_file_name'>" + file.title + "</span> "
 
-    text = "<span class='uploaded_file_message'>" + text + "</span>";
+    text += "</span>";
 
-    if (message.file.mode == "hosted") {
+    if (file.mode == "hosted" && s.startsWith(file.mimetype, "image/")) {
         text += "<div class='uploaded_file_preview'>";
 
-        if (s.startsWith(message.file.mimetype, "image/")) {
-            text += "<img src='/file/" + message.file.id + "/" + message.file.name + "'>";
-        } else {
-            text += "<a href='/file/" + message.file.id + "/download/" + message.file.name + "'>Download</a>";
-        }
+        text += "<a href='/file/" + file.id + "/url_private." + file.filetype + "' target='_blank'>"
+        text += "<img src='/file/" + file.id + "/thumb_360." + file.filetype + "'>";
+        text += "</a>";
 
         text += "</div>";
+    } else {
+        text += "<div class='uploaded_file_download'>";
+        text += "<a href='/file/" + file.id + "/url_private_download'>Download original</a>";
+        text += "</div>";
     }
+
+    if (file.initial_comment) {
+        text += "<div class='initial_comment'>" + reformat_message_text(file.initial_comment.comment) + "</div>";
+    }    
 
     return text;
 }
