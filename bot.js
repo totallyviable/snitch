@@ -1,6 +1,7 @@
 var os = require('os');
 var util = require('util');
 var _ = require('underscore');
+var s = require("underscore.string");
 
 var Botkit = require('botkit');
 
@@ -193,6 +194,10 @@ controller.on('ambient', function(bot, message){
 
     var text = reformat_message_text(message.text);
 
+    if (message.file) {
+        text = format_message_text_from_file(message);
+    }
+
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
             if (attachment.fallback != "NO FALLBACK DEFINED") {
@@ -224,6 +229,10 @@ controller.on('bot_message', function(bot, message){
     var timestamp = message.ts.split(".")[0];
 
     var text = reformat_message_text(message.text);
+
+    if (message.file) {
+        text = format_message_text_from_file(message);
+    }
 
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
@@ -258,6 +267,10 @@ controller.on('me_message', function(bot, message){
     var timestamp = message.ts.split(".")[0];
 
     var text = reformat_message_text(message.text);
+
+    if (message.file) {
+        text = format_message_text_from_file(message);
+    }
 
     if (_.size(message.attachments) > 0) {
         _.each(message.attachments, function(attachment){
@@ -325,8 +338,26 @@ controller.on('user_typing', function(bot, message){
 });
 
 
-controller.on('file_public', function(bot, message){
-    _dump("[file_public]", message);
+controller.on('file_share', function(bot, message){
+    _dump("[file_share]", message);
+
+    var timestamp = message.ts.split(".")[0];
+
+    var text = format_message_text_from_file(message);
+
+    io.emit('message', {
+        timestamp: timestamp,
+        channel: sanitized_channel(message.channel),
+        user: sanitized_user(message.user),
+        text: text
+    });
+
+    save_message(message.channel, message.ts, message);
+
+    bot.api.reactions.add({
+        file: message.file.id,
+        name: 'white_small_square',
+    }, emoji_reaction_error_callback);
 });
 
 
@@ -352,6 +383,10 @@ io.on('connection', function (socket) {
                     var timestamp = message.ts.split(".")[0];
 
                     var text = reformat_message_text(message.text);
+
+                    if (message.file) {
+                        text = format_message_text_from_file(message);
+                    }
 
                     if (_.size(message.attachments) > 0) {
                         _.each(message.attachments, function(attachment){
@@ -537,6 +572,49 @@ function sanitized_channel(channel){
     return channel;
 }
 
+function format_message_text_from_file(message) {
+    if (! message.file) {
+        return false;
+    }
+
+    if (message.file.mode != "hosted") {
+        return "shared an unsupported file type (" + message.file.pretty_type + "). Sorry!";
+    }
+
+    // =====
+
+    var text = "uploaded ";
+
+    if (message.file.initial_comment) {
+        text += " and commented on ";
+    }
+
+    if (message.file.mode == "hosted") {
+        if (s.startsWith(message.file.mimetype, "image/")) {
+            text += " an image: ";
+        } else {
+            text += " a file: ";
+        }
+    }
+
+    text += " <spam class='uploaded_file_name'>" + message.file.name + "</span> "
+
+    text = "<span class='uploaded_file_message'>" + text + "</span>";
+
+    if (message.file.mode == "hosted") {
+        text += "<div class='uploaded_file_preview'>";
+
+        if (s.startsWith(message.file.mimetype, "image/")) {
+            text += "<img src='/file/" + message.file.id + "/" + message.file.name + "'>";
+        } else {
+            text += "<a href='/file/" + message.file.id + "/download/" + message.file.name + "'>Download</a>";
+        }
+
+        text += "</div>";
+    }
+
+    return text;
+}
 
 function reformat_message_text(text) {
     // https://api.slack.com/docs/formatting
@@ -576,10 +654,6 @@ function reformat_message_text(text) {
             }
         };
     })(this));
-
-    // text = text.replace(/&lt;/g, '<');
-    // text = text.replace(/&gt;/g, '>');
-    // text = text.replace(/&amp;/g, '&');
 
     // nl2br
     text = text.replace(/\n/g, "<br/>");
