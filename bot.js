@@ -7,6 +7,7 @@ var Botkit = require('botkit');
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
+var request = require('request');
 var io = require('socket.io')(http);
 
 var redis = require('redis'),
@@ -38,6 +39,20 @@ app.use(express.static('public'));
 
 http.listen(process.env.PORT, function(){
     _log('listening on port ' + process.env.PORT);
+});
+
+app.get("/file/:file_id/:name", function(req, res){
+    var url = "https://files.slack.com/files-pri/" + bot.team_info['id'] + "-" + req.params.file_id + "/" + req.params.name;
+
+    // TODO: handle request errors better
+    // TODO: check if file mode is hosted or external
+
+    request({
+        url: url,
+        headers: {
+            'Authorization': 'Bearer ' + bot.config.token
+        }
+    }).pipe(res);
 });
 
 var cache = {
@@ -307,6 +322,21 @@ controller.on('user_typing', function(bot, message){
         channel: sanitized_channel(message.channel),
         user: sanitized_user(message.user)
     });
+});
+
+
+controller.on('file_public', function(bot, message){
+    _dump("[file_public]", message);
+});
+
+
+controller.on('file_change', function(bot, message){
+    _dump("[file_change]", message);
+});
+
+
+controller.on('file_deleted', function(bot, message){
+    _dump("[file_deleted]", message);
 });
 
 
