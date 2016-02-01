@@ -6,6 +6,8 @@ var s = require("underscore.string");
 var Botkit = require('botkit');
 
 var express = require('express');
+var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
 var app = express();
 var http = require('http').Server(app);
 var request = require('request');
@@ -36,10 +38,43 @@ if (! process.env.PORT) {
     process.env.PORT = 3000;
 }
 
+if (! process.env.SESSION_SECRET) {
+    _error('Error: Specify SESSION_SECRET in environment');
+    process.exit(1);
+}
+
+app.use(session({
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 2628000000 // 1 month
+    },
+    secret: process.env.SESSION_SECRET,
+    store: new RedisStore({
+        client: redis_client,
+    })
+}));
+
 app.use(express.static('public'));
 
 http.listen(process.env.PORT, function(){
     _log('listening on port ' + process.env.PORT);
+});
+
+app.get('/foo', function(req, res) {
+    req.session.views++;
+
+    res.send('you viewed this page ' + req.session.views + ' times');
+});
+
+app.get('/logout', function(req, res) {
+    req.session.destroy(function(err){
+        if (err) {
+            return _error(err);
+        }
+
+        res.redirect('/');
+    });
 });
 
 app.get("/file/:file_id/:variant.:ext?", function(req, res){
