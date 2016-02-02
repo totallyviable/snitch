@@ -1,5 +1,6 @@
 var os = require('os');
 var util = require('util');
+var formatUrl = require("url").format;
 var _ = require('underscore');
 var s = require("underscore.string");
 
@@ -16,6 +17,8 @@ var io = require('socket.io')(http);
 var redis = require('redis'),
     redis_client = redis.createClient(process.env.REDIS_URL);
 
+var patreon = require('patreon');
+
 // logs
 
 function _log(){
@@ -31,6 +34,15 @@ function _dump(){
         _log(util.inspect(arg));
     });
 }
+
+// patreon
+
+if (! (process.env.PATREON_CLIENT_ID && process.env.PATREON_CLIENT_SECRET)) {
+    _error('Error: Specify PATREON_CLIENT_ID and PATREON_CLIENT_SECRET in environment');
+    process.exit(1);
+}
+
+var patreon_oauth = patreon.oauth(process.env.PATREON_CLIENT_ID, process.env.PATREON_CLIENT_SECRET);
 
 // web server
 
@@ -61,17 +73,102 @@ http.listen(process.env.PORT, function(){
     _log('listening on port ' + process.env.PORT);
 });
 
-app.get('/foo', function(req, res) {
-    req.session.views++;
+app.get('/login', function(req, res) {
+    var url = formatUrl({
+        protocol: 'https',
+        host: 'patreon.com',
+        pathname: '/oauth2/authorize',
+        query: {
+            response_type: 'code',
+            client_id: process.env.PATREON_CLIENT_ID,
+            redirect_uri: "http://totallyviable-local.ngrok.com/oauth/redirect",
+            state: 'chill'
+        }
+    });
 
-    res.send('you viewed this page ' + req.session.views + ' times');
+    res.redirect(url);
+});
+
+app.get('/oauth/redirect', function(req, res) {
+    patreon_oauth.getTokens(req.query.code, "http://totallyviable-local.ngrok.com/oauth/redirect", function (err, tokens) {
+        if (err) {
+            _error(err);
+            return res.redirect('/?token_error');
+        }
+
+        req.session.tokens = tokens;
+
+        // TODO: fix direct reference to patreon.default
+        var client = patreon.default(tokens.access_token);
+
+        client('/current_user', function (err, user) {
+            if (err) {
+                _error(err);
+                res.redirect("/");
+                return;
+            }
+
+            req.session.patreon_user = user;
+
+            res.redirect('/patreon');
+        });
+    });
+});
+
+app.get('/refresh_patreon', function(req, res) {
+    if (! (req.session.tokens && req.session.tokens.refresh_token)) {
+        res.redirect('/');
+    }
+
+    patreon_oauth.refreshToken(req.session.tokens.refresh_token, function(err, tokens){
+        if (err) {
+            _error(err);
+            return res.redirect('/?token_error');
+        }
+
+        req.session.tokens = tokens;
+
+        // TODO: fix direct reference to patreon.default
+        var client = patreon.default(tokens.access_token);
+
+        client('/current_user', function (err, user) {
+            if (err) {
+                _error(err);
+                res.redirect("/");
+                return;
+            }
+
+            req.session.patreon_user = user;
+
+            res.type('text/plain').send(JSON.stringify(req.session, null, 4));
+        });
+    });
+});
+
+app.get('/me', function(req, res) {
+    var text = JSON.stringify(req.session, null, 4);
+
+    text += "\n\n";
+
+    // TODO: fix direct reference to patreon.default
+    var client = patreon.default(req.session.tokens.access_token);
+
+    client('/current_user', function (err, campaigns) {
+        if (err) {
+            _error(err);
+            res.redirect("/");
+            return;
+        }
+
+        text += JSON.stringify(campaigns, null, 4);
+
+        res.type('text/plain').send(text);
+    });
 });
 
 app.get('/logout', function(req, res) {
     req.session.destroy(function(err){
-        if (err) {
-            return _error(err);
-        }
+        if (err) _error(err);
 
         res.redirect('/');
     });
