@@ -2,12 +2,14 @@
 <html lang="en">
     <head>
         <title>Totally Viable</title>
+        <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="/favicon.ico">
 
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap-theme.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="/style.css">
 
         <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.4/socket.io.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
@@ -36,190 +38,6 @@
                 }
             }
         </script>
-
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font: 13px normal Helvetica, Arial, sans-serif;
-                padding: 10px;
-                background: #f4fdfb center fixed no-repeat url('/tv-bg-squiggle-matte.png');
-            }
-
-            a, a:hover {
-                color: #0ae5ab;
-            }
-
-            span.emoji {
-                display: -moz-inline-box;
-                -moz-box-orient: vertical;
-                display: inline-block;
-                vertical-align: baseline;
-                *vertical-align: auto;
-                *zoom: 1;
-                *display: inline;
-                width: 1em;
-                height: 1em;
-                background-size: 1em;
-                background-repeat: no-repeat;
-                text-indent: -9999px;
-                background-position: 50%, 50%;
-                background-size: contain;
-            }
-
-            span.emoji-sizer {
-                line-height: 0.81em;
-                font-size: 1em;
-                margin: -2px 0;
-            }
-
-            span.emoji-outer {
-                display: -moz-inline-box;
-                display: inline-block;
-                *display: inline;
-                height: 1em;
-                width: 1em;
-            }
-
-            span.emoji-inner {
-                display: -moz-inline-box;
-                display: inline-block;
-                text-indent: -9999px;
-                width: 100%;
-                height: 100%;
-                vertical-align: -2px;
-                *vertical-align: auto;
-                *zoom: 1;
-            }
-
-            img.emoji {
-                width: 1em;
-                height: 1em;
-            }
-
-            .flexbox {
-                display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
-                display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
-                display: -ms-flexbox;      /* TWEENER - IE 10 */
-                display: -webkit-flex;     /* NEW - Chrome */
-                display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
-            }
-
-            #navbar_container {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: #f4fdfb;
-            }
-
-            .navbar {
-                font-size: 18px;
-                background: #fff;
-            }
-
-                .navbar p {
-                    margin-left: 10px;
-                    margin-right: 10px;
-                }
-
-                .navbar .note {
-                    font-size: 14px;
-                    color: #bbb;
-                    font-style: italic;
-                }
-
-                    .navbar .note a, .navbar .note a:hover {
-                        color: inherit;
-                        text-decoration: underline;
-                    }
-
-            #message_container {
-            }
-
-            .message {
-            }
-
-                .message .avatar {
-                    display: block;
-                    border-radius: 5px;
-                    width: 50px;
-                    margin-right: 15px;
-                }
-
-                .message .meta {
-                    margin-bottom: 5px;
-                }
-
-                    .message .meta * {
-                        display: inline-block;
-                    }
-
-                    .message .meta .username {
-                        font-weight: bold;
-                    }
-
-                    .message .meta .channel,
-                    .message .meta .timestamp {
-                        margin-left: 7px;
-                        color: #c3cac8;
-                    }
-
-                    .message .meta .is_bot {
-                        background: #F7F7F7;
-                        color: #B4B4B4;
-                        padding: 2px 4px;
-                        margin-left: 7px;
-                        font-size: 0.75em;
-                        vertical-align: top;
-                    }
-
-                .message .text {
-                    font-size: 18px;
-
-                    /* https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container */
-                    overflow-wrap: break-word;
-                    word-wrap: break-word;
-
-                    -ms-word-break: break-all;
-                    /* This is the dangerous one in WebKit, as it breaks things wherever */
-                    word-break: break-all;
-                    /* Instead use this non-standard one: */
-                    word-break: break-word;
-
-                    /* Adds a hyphen where the word breaks, if supported (No Blink) */
-                    -ms-hyphens: auto;
-                    -moz-hyphens: auto;
-                    -webkit-hyphens: auto;
-                    hyphens: auto;
-                }
-
-                    .message .text .me_message {
-                        font-style: italic;
-                    }
-
-                    .message .text .attachment_fallback {
-                        padding-top: 0;
-                        padding-bottom: 0;
-                        margin-top: 15px;
-                    }
-
-                    .message .text blockquote {
-                        border-left-color: rgba(0,0,0,0.075);
-                    }
-
-            .divider {
-                padding: 15px 0;
-            }
-
-                .divider .contents {
-                    border-bottom: 1px solid rgba(0,0,0, 0.1);
-                }
-        </style>
     </head>
     <body>
         <div class="container" id="message_container" style="display: none">
