@@ -54,6 +54,10 @@ app.get("/file/:file_id/:variant.:ext?", function(req, res){
 
         var url = file[req.params.variant];
 
+        if (! url) {
+            return request('https://slack-imgs.com/?url=null&width=360&height=250').pipe(res);
+        }
+
         request({
             url: url,
             headers: {
