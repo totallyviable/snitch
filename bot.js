@@ -710,6 +710,10 @@ function sanitized_message_attachment_inline(attachment){
         response.inline_text = reformat_message_text(attachment.text);
     }
 
+    if (response.color && ! s.startsWith(response.color, "#")) {
+        response.color = "#" + response.color;
+    }
+
     return response;
 }
 
