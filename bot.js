@@ -669,57 +669,6 @@ function sanitized_message_attachment_inline(attachment){
     return response;
 }
 
-function format_message_text_from_file(file) {
-    if (! file) {
-        return false;
-    }
-
-    // =====
-
-    var text = "<span class='uploaded_file_message'>";
-
-    text += " uploaded ";
-
-    if (file.initial_comment) {
-        text += " and commented on ";
-    }
-
-    if (file.mode == "hosted") {
-        if (s.startsWith(file.mimetype, "image/")) {
-            text += " an image: ";
-        } else {
-            text += " a file: ";
-        }
-    } else {
-        // TODO: proper indefinite article
-        text += " a " + file.pretty_type + " file: ";
-    }
-
-    text += " <spam class='uploaded_file_name'>" + file.title + "</span> "
-
-    text += "</span>";
-
-    if (file.mode == "hosted" && s.startsWith(file.mimetype, "image/")) {
-        text += "<div class='uploaded_file_preview'>";
-
-        text += "<a href='/file/" + file.id + "/url_private." + file.filetype + "' target='_blank'>"
-        text += "<img src='/file/" + file.id + "/thumb_360." + file.filetype + "'>";
-        text += "</a>";
-
-        text += "</div>";
-    } else {
-        text += "<div class='uploaded_file_download'>";
-        text += "<a href='/file/" + file.id + "/url_private_download'>Download original</a>";
-        text += "</div>";
-    }
-
-    if (file.initial_comment) {
-        text += "<div class='initial_comment'>" + reformat_message_text(file.initial_comment.comment) + "</div>";
-    }    
-
-    return text;
-}
-
 function reformat_message_text(text) {
     // https://api.slack.com/docs/formatting
     text = text.replace(/<([@#!])?([^>|]+)(?:\|([^>]+))?>/g, (function(_this) {
