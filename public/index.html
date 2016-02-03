@@ -149,6 +149,12 @@
                                                 </div>
                                             {{/ inline_title }}
 
+                                            {{# inline_text }}
+                                                <div class="text inline_text">
+                                                    {{& inline_text }}
+                                                </div>
+                                            {{/ inline_text }}
+
                                             {{# fields.length }}
                                                 <div class="fields row">
                                                     {{# fields }}
@@ -173,12 +179,6 @@
                                                     <img src="{{ image_url }}" class="img-responsive img-rounded">
                                                 </div>
                                             {{/ image_url }}
-
-                                            {{# inline_text }}
-                                                <div class="text inline_text">
-                                                    {{& inline_text }}
-                                                </div>
-                                            {{/ inline_text }}
                                         </blockquote>
                                     {{/ inline }}
                                 </div>
