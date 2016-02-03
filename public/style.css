@@ -168,9 +168,54 @@ img.emoji {
             margin-top: 15px;
         }
 
-        .message .text blockquote {
-            border-left-color: rgba(0,0,0,0.075);
+    .message .attachment {
+        margin-top: 5px;
+    }
+
+        .message .attachment .upload_byline {
+            color: #B4B4B4;
         }
+
+        .message .attachment .upload {
+            margin-top: 10px;
+        }
+
+        .message .attachment .wrapper {
+            border-left: 4px solid rgba(0,0,0, 0.075);
+            padding: 5px 0 5px 15px;
+            margin-top: 10px;
+        }
+
+
+            .message .attachment .wrapper .upload img {
+                border: 1px solid rgba(0,0,0, 0.075);
+            }
+
+            .message .attachment .wrapper .thumb img {
+                max-width: 75px;
+                max-height: 75px;
+            }
+
+        .message .attachment .initial_comment {
+            margin-top: 10px;
+        }
+
+        .message .attachment .title {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .message .attachment .fields {
+            margin-top: 10px;
+        }
+
+            .message .attachment .fields .field {
+                margin-bottom: 5px;
+            }
+
+                .message .attachment .fields .field .title {
+                    margin: 0;
+                }
 
 .divider {
     padding: 15px 0;

@@ -1,0 +1,107 @@
+<div class="row message">
+    <div class="col-md-8 col-md-offset-2">
+        <div class="flexbox">
+            <div style="min-width:65px;">
+                <img src="{{ avatar }}" class="avatar"/>
+            </div>
+
+            <div>
+                <div class="meta">
+                    <span class="username">{{ username }}</span>
+                    <span class="channel">{{ channel }}</span>
+                    {{# is_bot}}<span class="is_bot">BOT</span>{{/ is_bot }}
+                    <span class="timestamp">{{ timestamp }}</span>
+                </div>
+
+                {{# text }}
+                    <div class="text">
+                        {{ text }}
+                    </div>
+                {{/ text }}
+
+                {{# attachment }}
+                    <div class="attachment">
+                        {{# attachment.file }}
+                            {{# attachment.file.byline }}
+                                <div class="text upload_byline">
+                                    {{ attachment.file.byline }}:
+                                    <a href="{{ attachment.file.high_res }}">{{ attachment.file.name }}</a>
+                                </div>
+                            {{/ attachment.file.byline }}
+
+                            {{# attachment.file.low_res }}
+                                <div class="upload">
+                                    <img src="{{ attachment.file.low_res }}" class="img-responsive">
+                                </div>
+                            {{/ attachment.file.low_res }}
+
+                            {{# attachment.file.initial_comment }}
+                                <div class="text initial_comment">
+                                    {{ attachment.file.initial_comment }}
+                                </div>
+                            {{/ attachment.file.initial_comment }}
+                        {{/ attachment.file }}
+
+                        {{# attachment.pretext }}
+                            <div class="text">
+                                {{ attachment.pretext }}
+                            </div>
+                        {{/ attachment.pretext }}
+
+                        {{# attachment.include_wrapper }}
+                            <blockquote class="wrapper" {{# attachment.wrapper_color }}style="border-left-color: {{ attachment.wrapper_color }}"{{/ attachment.wrapper_color }}>
+
+                                {{# attachment.thumb_url }}
+                                    <div class="thumb pull-right">
+                                        <img src="{{ attachment.thumb_url }}">
+                                    </div>
+                                {{/ attachment.thumb_url }}
+
+                                {{! TODO: author_name, author_link, author_icon }}
+
+                                {{# attachment.title }}
+                                    <div class="title">
+                                        {{# attachment.title_link }}<a href="{{ attachment.title_link }}">{{/ attachment.title_link }}{{ attachment.title }}{{# attachment.title_link }}</a>{{/ attachment.title_link }}
+                                    </div>
+                                {{/ attachment.title }}
+
+                                {{# attachment.fields.length }}
+                                    <div class="fields row">
+                                        {{# attachment.fields }}
+                                            <div class="field {{#short}}col-xs-6{{/short}} {{^short}}col-xs-12{{/short}}">
+                                                {{# title }}
+                                                    <div class="title">
+                                                        {{ title }}
+                                                    </div>
+                                                {{/ title}}
+                                                {{# text }}
+                                                    <div class="text">
+                                                        {{ text }}
+                                                    </div>
+                                                {{/ text }}
+                                            </div>
+                                        {{/ attachment.fields }}
+                                    </div>
+                                {{/ attachment.fields.length }}
+
+                                {{# attachment.image_url }}
+                                    <div class="upload">
+                                        <img src="{{ attachment.image_url }}" class="img-responsive">
+                                    </div>
+                                {{/ attachment.image_url }}
+
+                                {{# attachment.text }}
+                                    <div class="text">
+                                        {{ attachment.text }}
+                                    </div>
+                                {{/ attachment.text }}
+                            </blockquote>
+                        {{/ attachment.include_wrapper }}
+                    </div>
+                {{/ attachment }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{> divider}}
