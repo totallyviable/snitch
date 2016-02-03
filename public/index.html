@@ -42,9 +42,6 @@
     </head>
     <body>
         <div class="container" id="message_container" style="display: none">
-            <div class="row divider">
-                <div class="col-md-8 col-md-offset-2 contents"></div>
-            </div>
         </div>
 
         <div class="container-fluid" id="navbar_container">
@@ -103,7 +100,7 @@
 
                             {{# text }}
                                 <div class="text">
-                                    {{ text }}
+                                    {{& text }}
                                 </div>
                             {{/ text }}
 
@@ -125,7 +122,7 @@
 
                                         {{# initial_comment }}
                                             <div class="text initial_comment">
-                                                {{ initial_comment }}
+                                                {{& initial_comment }}
                                             </div>
                                         {{/ initial_comment }}
                                     {{/ file }}
@@ -133,7 +130,7 @@
                                     {{# inline }}
                                         {{# pretext }}
                                             <div class="text">
-                                                {{ pretext }}
+                                                {{& pretext }}
                                             </div>
                                         {{/ pretext }}
 
@@ -146,26 +143,26 @@
 
                                             {{! TODO: author_name, author_subname, author_icon }}
 
-                                            {{# title }}
+                                            {{# inline_title }}
                                                 <div class="title">
-                                                    {{# title_link }}<a href="{{ title_link }}">{{/ title_link }}{{ title }}{{# title_link }}</a>{{/ title_link }}
+                                                    {{# inline_title_link }}<a href="{{ inline_title_link }}">{{/ inline_title_link }}{{ inline_title }}{{# inline_title_link }}</a>{{/ inline_title_link }}
                                                 </div>
-                                            {{/ title }}
+                                            {{/ inline_title }}
 
                                             {{# fields.length }}
                                                 <div class="fields row">
                                                     {{# fields }}
                                                         <div class="field {{#short}}col-xs-6{{/short}} {{^short}}col-xs-12{{/short}}">
-                                                            {{# title }}
+                                                            {{# inline_title }}
                                                                 <div class="title">
-                                                                    {{ title }}
+                                                                    {{ inline_title }}
                                                                 </div>
-                                                            {{/ title}}
-                                                            {{# value }}
+                                                            {{/ inline_title}}
+                                                            {{# inline_value }}
                                                                 <div class="text">
-                                                                    {{ value }}
+                                                                    {{& inline_value }}
                                                                 </div>
-                                                            {{/ value }}
+                                                            {{/ inline_value }}
                                                         </div>
                                                     {{/ fields }}
                                                 </div>
@@ -177,11 +174,11 @@
                                                 </div>
                                             {{/ image_url }}
 
-                                            {{# text }}
+                                            {{# inline_text }}
                                                 <div class="text">
-                                                    {{ text }}
+                                                    {{& inline_text }}
                                                 </div>
-                                            {{/ text }}
+                                            {{/ inline_text }}
                                         </blockquote>
                                     {{/ inline }}
                                 </div>
@@ -190,8 +187,6 @@
                     </div>
                 </div>
             </div>
-
-            {{> divider}}
         </script>
 
         <script>
@@ -203,7 +198,14 @@
 
             var socket = io.connect(websocket_host);
 
-            var message_line = _.template($("#message_line").html());
+            var templates = {
+                divider: $('#template_divider').html(),
+                message: $('#template_message').html()
+            };
+
+            _.each(templates, function(template){
+                Mustache.parse(template);
+            });
 
             emoji.img_sets.apple.path = "https://cdn.rawgit.com/iamcal/emoji-data/tree/4a5d19f665d3648513c700ad97a870e387ba7896/img-apple-160";
             emoji.img_sets.apple.sheet = "https://cdn.rawgit.com/iamcal/emoji-data/4a0885fe0c2cae34db3ea7ec46682dc057a2466b/sheet_apple_64.png";
@@ -223,6 +225,8 @@
             }
 
             $(function(){
+                $("#message_container").html(Mustache.render(templates.divider));
+
                 $("body").css({
                     paddingBottom: $("#navbar_container").height() + parseInt($("body").css("paddingTop"))
                 });
@@ -262,16 +266,17 @@
                         message.text = emoji.replace_colons(message.text);
                     }
 
+                    // TODO: move these into the server formatter
+                    message.ts = moment.unix(message.ts).format("h:mm a");
+                    message.channel = "#" + message.channel.name;
+                    message.username = message.user.name;
+                    message.is_bot = message.user.is_bot;
+                    message.avatar = message.user.profile.image || "https://slack.com/img/slack_hash_128.png";
+
                     var scroll_was_at_bottom = scroll_is_at_bottom() || message.is_backfill;
 
-                    $("#message_container").append(message_line({
-                        timestamp: moment.unix(message.timestamp).format("h:mm a"),
-                        channel: "#" + message.channel.name,
-                        username: message.user.name,
-                        avatar: message.user.profile.image,
-                        is_bot: message.user.is_bot,
-                        text: message.text
-                    }));
+                    $("#message_container").append(Mustache.render(templates.message, message));
+                    $("#message_container").append(Mustache.render(templates.divider));
 
                     if (scroll_was_at_bottom) {
                         jump_to_page_bottom();

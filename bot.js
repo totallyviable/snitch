@@ -399,35 +399,11 @@ io.on('connection', function (socket) {
                 _.each(response.reverse(), function(message){
                     var message = JSON.parse(message);
 
-                    var timestamp = message.ts.split(".")[0];
+                    message = sanitized_message(message);
 
-                    var text = reformat_message_text(message.text);
+                    message.is_backfill = true;
 
-                    if (message.file) {
-                        text = format_message_text_from_file(message.file);
-                    }
-
-                    if (_.size(message.attachments) > 0) {
-                        _.each(message.attachments, function(attachment){
-                            if (attachment.fallback != "NO FALLBACK DEFINED") {
-                                text += "<blockquote class='attachment_fallback'>" + reformat_message_text(attachment.fallback) + "</blockquote>";
-                            }
-                        });
-                    }
-
-                    var alt_payload = undefined;
-
-                    if (message.bot_id) {
-                        alt_payload = message;
-                    }
-
-                    socket.emit('message', {
-                        is_backfill: true,
-                        timestamp: timestamp,
-                        channel: sanitized_channel(message.channel),
-                        user: sanitized_user(message.user || message.bot_id, alt_payload),
-                        text: text
-                    });
+                    socket.emit('message', message);
                 });
             });
         });
@@ -554,6 +530,81 @@ function cache_list(variant) {
     });
 }
 
+function sanitized_message(message){
+    var example = {
+        user: { }, // sanitized_user(message.channel)
+        channel: { }, // sanitized_channel(message.user)
+
+        ts: 1234567890.12345,
+
+        attachments: {
+            file: {
+                byline: "",
+                name: "",
+                low_res: "",
+                high_res: "",
+                initial_comment: ""
+            },
+            inline: [
+                {
+                    color: "red",
+
+                    pretext: "",
+
+                    author_name: "",
+                    author_subname: "",
+                    author_icon: "",
+
+                    inline_title: "",
+                    inline_title_link: "",
+
+                    inline_text: "",
+
+                    fields: [
+                        {
+                            field_title: "",
+                            field_value: "",
+                            short: true
+                        }
+                    ],
+
+                    image_url: "",
+                    thumb_url: ""
+                }
+            ]
+        }
+    };
+
+
+    var alt_payload = undefined;
+    if (message.bot_id) alt_payload = message;
+
+    var response = {
+        ts: message.ts,
+        user: sanitized_user(message.user || message.bot_id, alt_payload),
+        channel: sanitized_channel(message.channel),
+        text: reformat_message_text(message.text)
+    };
+
+    if (message.file) {
+        response.attachments = response.attachments || {};
+        response.attachments.file = sanitized_message_attachment_file(message.file);
+
+        delete response.text;
+    }
+
+    if (_.size(message.attachments) > 0) {
+        response.attachments = response.attachments || {};
+        response.attachments.inline = response.attachments.inline || [];
+
+        _.each(message.attachments, function(attachment){
+            response.attachments.inline.push(sanitized_message_attachment_inline(attachment));
+        });
+    }
+
+    return response;
+}
+
 function sanitized_user(user, alt_payload){
     var user = cache.users[user] || cache.bots[user];
 
@@ -606,6 +657,60 @@ function sanitized_channel(channel){
     channel.members = members;
 
     return channel;
+}
+
+function sanitized_message_attachment_file(file){
+    if (! file) {
+        return false;
+    }
+
+    var response = {
+        name: file.title,
+        full_res: "/file/" + file.id + "/url_private." + file.filetype,
+        low_res: "/file/" + file.id + "/thumb_360." + file.filetype,
+    };
+
+    var byline = ["uploaded"];
+
+    if (file.initial_comment) {
+        byline.push("and commented on");
+    }
+
+    if (file.mode == "hosted") {
+        if (s.startsWith(file.mimetype, "image/")) {
+            byline.push("an image");
+        } else {
+            byline.push("a file");
+        }
+    } else {
+        // TODO: proper indefinite article
+        byline.push("a " + file.pretty_type + " file");
+    }
+
+    response.byline = byline.join(" ");
+
+    if (file.initial_comment) {
+        response.initial_comment = reformat_message_text(file.initial_comment.comment);
+    }
+
+    return response;
+}
+
+function sanitized_message_attachment_inline(attachment){
+    var response = _.pick(attachment, "color", "pretext", "author_name", "author_subname", "author_icon", "fields", "image_url", "thumb_url");
+
+    response.inline_title = attachment.title;
+    response.inline_title_link = attachment.title_link;
+
+    if (attachment.pretext) {
+        response.pretext = reformat_message_text(attachment.pretext);
+    }
+
+    if (attachment.text) {
+        response.inline_text = reformat_message_text(attachment.text);
+    }
+
+    return response;
 }
 
 function format_message_text_from_file(file) {
