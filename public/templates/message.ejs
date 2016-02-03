@@ -10,7 +10,7 @@
                     <span class="username">{{ username }}</span>
                     <span class="channel">{{ channel }}</span>
                     {{# is_bot}}<span class="is_bot">BOT</span>{{/ is_bot }}
-                    <span class="timestamp">{{ timestamp }}</span>
+                    <span class="timestamp">{{ ts }}</span>
                 </div>
 
                 {{# text }}
@@ -19,86 +19,85 @@
                     </div>
                 {{/ text }}
 
-                {{# attachment }}
+                {{# attachments }}
                     <div class="attachment">
-                        {{# attachment.file }}
-                            {{# attachment.file.byline }}
+                        {{# file }}
+                            {{# byline }}
                                 <div class="text upload_byline">
-                                    {{ attachment.file.byline }}:
-                                    <a href="{{ attachment.file.high_res }}">{{ attachment.file.name }}</a>
+                                    {{ byline }}:
+                                    <a href="{{ high_res }}">{{ name }}</a>
                                 </div>
-                            {{/ attachment.file.byline }}
+                            {{/ byline }}
 
-                            {{# attachment.file.low_res }}
+                            {{# low_res }}
                                 <div class="upload">
-                                    <img src="{{ attachment.file.low_res }}" class="img-responsive">
+                                    <img src="{{ low_res }}" class="img-responsive">
                                 </div>
-                            {{/ attachment.file.low_res }}
+                            {{/ low_res }}
 
-                            {{# attachment.file.initial_comment }}
+                            {{# initial_comment }}
                                 <div class="text initial_comment">
-                                    {{ attachment.file.initial_comment }}
+                                    {{ initial_comment }}
                                 </div>
-                            {{/ attachment.file.initial_comment }}
-                        {{/ attachment.file }}
+                            {{/ initial_comment }}
+                        {{/ file }}
 
-                        {{# attachment.pretext }}
-                            <div class="text">
-                                {{ attachment.pretext }}
-                            </div>
-                        {{/ attachment.pretext }}
+                        {{# inline }}
+                            {{# pretext }}
+                                <div class="text">
+                                    {{ pretext }}
+                                </div>
+                            {{/ pretext }}
 
-                        {{# attachment.include_wrapper }}
-                            <blockquote class="wrapper" {{# attachment.wrapper_color }}style="border-left-color: {{ attachment.wrapper_color }}"{{/ attachment.wrapper_color }}>
-
-                                {{# attachment.thumb_url }}
+                            <blockquote class="wrapper" {{# color }}style="border-left-color: {{ color }}"{{/ color }}>
+                                {{# thumb_url }}
                                     <div class="thumb pull-right">
-                                        <img src="{{ attachment.thumb_url }}">
+                                        <img src="{{ thumb_url }}">
                                     </div>
-                                {{/ attachment.thumb_url }}
+                                {{/ thumb_url }}
 
-                                {{! TODO: author_name, author_link, author_icon }}
+                                {{! TODO: author_name, author_subname, author_icon }}
 
-                                {{# attachment.title }}
+                                {{# title }}
                                     <div class="title">
-                                        {{# attachment.title_link }}<a href="{{ attachment.title_link }}">{{/ attachment.title_link }}{{ attachment.title }}{{# attachment.title_link }}</a>{{/ attachment.title_link }}
+                                        {{# title_link }}<a href="{{ title_link }}">{{/ title_link }}{{ title }}{{# title_link }}</a>{{/ title_link }}
                                     </div>
-                                {{/ attachment.title }}
+                                {{/ title }}
 
-                                {{# attachment.fields.length }}
+                                {{# fields.length }}
                                     <div class="fields row">
-                                        {{# attachment.fields }}
+                                        {{# fields }}
                                             <div class="field {{#short}}col-xs-6{{/short}} {{^short}}col-xs-12{{/short}}">
                                                 {{# title }}
                                                     <div class="title">
                                                         {{ title }}
                                                     </div>
                                                 {{/ title}}
-                                                {{# text }}
+                                                {{# value }}
                                                     <div class="text">
-                                                        {{ text }}
+                                                        {{ value }}
                                                     </div>
-                                                {{/ text }}
+                                                {{/ value }}
                                             </div>
-                                        {{/ attachment.fields }}
+                                        {{/ fields }}
                                     </div>
-                                {{/ attachment.fields.length }}
+                                {{/ fields.length }}
 
-                                {{# attachment.image_url }}
+                                {{# image_url }}
                                     <div class="upload">
-                                        <img src="{{ attachment.image_url }}" class="img-responsive">
+                                        <img src="{{ image_url }}" class="img-responsive">
                                     </div>
-                                {{/ attachment.image_url }}
+                                {{/ image_url }}
 
-                                {{# attachment.text }}
+                                {{# text }}
                                     <div class="text">
-                                        {{ attachment.text }}
+                                        {{ text }}
                                     </div>
-                                {{/ attachment.text }}
+                                {{/ text }}
                             </blockquote>
-                        {{/ attachment.include_wrapper }}
+                        {{/ inline }}
                     </div>
-                {{/ attachment }}
+                {{/ attachments }}
             </div>
         </div>
     </div>
