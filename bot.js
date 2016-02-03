@@ -201,24 +201,7 @@ controller.on('bot_changed', function(bot, message){
 controller.on('ambient', function(bot, message){
     bot.botkit.log("[AMBIENT] " + message.text);
 
-    var timestamp = message.ts.split(".")[0];
-
-    var text = reformat_message_text(message.text);
-
-    if (_.size(message.attachments) > 0) {
-        _.each(message.attachments, function(attachment){
-            if (attachment.fallback != "NO FALLBACK DEFINED") {
-                text += "<blockquote class='attachment_fallback'>" + reformat_message_text(attachment.fallback) + "</blockquote>";
-            }
-        });
-    }
-
-    io.emit('message', {
-        timestamp: timestamp,
-        channel: sanitized_channel(message.channel),
-        user: sanitized_user(message.user),
-        text: text
-    });
+    io.emit('message', sanitized_message(message));
 
     save_message(message.channel, message.ts, message);
 
@@ -233,29 +216,7 @@ controller.on('ambient', function(bot, message){
 controller.on('bot_message', function(bot, message){
     bot.botkit.log("[BOT MESSAGE] " + message.text);
 
-    var timestamp = message.ts.split(".")[0];
-
-    var text = reformat_message_text(message.text);
-
-    // TODO: check if this is possible
-    if (message.file) {
-        text = format_message_text_from_file(message.file);
-    }
-
-    if (_.size(message.attachments) > 0) {
-        _.each(message.attachments, function(attachment){
-            if (attachment.fallback != "NO FALLBACK DEFINED") {
-                text += "<blockquote class='attachment_fallback'>" + reformat_message_text(attachment.fallback) + "</blockquote>";
-            }
-        });
-    }
-
-    io.emit('message', {
-        timestamp: timestamp,
-        channel: sanitized_channel(message.channel),
-        user: sanitized_user(message.bot_id, message),
-        text: text
-    });
+    io.emit('message', sanitized_message(message));
 
     save_message(message.channel, message.ts, message);
 
@@ -272,24 +233,7 @@ controller.on('me_message', function(bot, message){
 
     bot.botkit.log("[ME MESSAGE] " + message.text);
 
-    var timestamp = message.ts.split(".")[0];
-
-    var text = reformat_message_text(message.text);
-
-    if (_.size(message.attachments) > 0) {
-        _.each(message.attachments, function(attachment){
-            if (attachment.fallback != "NO FALLBACK DEFINED") {
-                text += "<blockquote class='attachment_fallback'>" + reformat_message_text(attachment.fallback) + "</blockquote>";
-            }
-        });
-    }
-
-    io.emit('message', {
-        timestamp: timestamp,
-        channel: sanitized_channel(message.channel),
-        user: sanitized_user(message.user),
-        text: text
-    });
+    io.emit('message', sanitized_message(message));
 
     save_message(message.channel, message.ts, message);
 
@@ -349,16 +293,7 @@ controller.on('user_typing', function(bot, message){
 controller.on('file_share', function(bot, message){
     _dump("[file_share]", message);
 
-    var timestamp = message.ts.split(".")[0];
-
-    var text = format_message_text_from_file(message.file);
-
-    io.emit('message', {
-        timestamp: timestamp,
-        channel: sanitized_channel(message.channel),
-        user: sanitized_user(message.user),
-        text: text
-    });
+    io.emit('message', sanitized_message(message));
 
     save_message(message.channel, message.ts, message);
 
