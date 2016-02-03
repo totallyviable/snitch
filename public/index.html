@@ -141,7 +141,19 @@
                                                 </div>
                                             {{/ thumb_url }}
 
-                                            {{! TODO: author_name, author_subname, author_icon }}
+                                            {{# author }}
+                                                <div class="title author">
+                                                    {{# icon }}
+                                                        <img src="{{ icon }}" width="18" class="img-rounded">
+                                                    {{/ icon }}
+
+                                                    {{ name }}
+
+                                                    {{# subname }}
+                                                        <span class="subname">{{ subname }}
+                                                    {{/ subname }}
+                                                </div>
+                                            {{/ author }}
 
                                             {{# inline_title }}
                                                 <div class="title">

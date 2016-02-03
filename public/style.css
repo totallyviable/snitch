@@ -209,6 +209,11 @@ img.emoji {
             font-weight: bold;
         }
 
+            .message .attachment .title.author .subname {
+                font-weight: normal;
+                color: #B4B4B4;
+            }
+
         .message .attachment .fields {
             margin-top: 10px;
         }

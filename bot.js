@@ -486,9 +486,11 @@ function sanitized_message(message){
 
                     pretext: "",
 
-                    author_name: "",
-                    author_subname: "",
-                    author_icon: "",
+                    author: {
+                        name: "",
+                        subname: "",
+                        icon: ""
+                    },
 
                     inline_title: "",
                     inline_title_link: "",
@@ -632,10 +634,18 @@ function sanitized_message_attachment_file(file){
 }
 
 function sanitized_message_attachment_inline(attachment){
-    var response = _.pick(attachment, "color", "pretext", "author_name", "author_subname", "author_icon", "fields", "image_url", "thumb_url");
+    var response = _.pick(attachment, "color", "pretext", "fields", "image_url", "thumb_url");
 
     response.inline_title = attachment.title;
     response.inline_title_link = attachment.title_link;
+
+    if (attachment.author_name || attachment.author_subname || attachment.author_icon) {
+        response.author = {
+            name: attachment.author_name,
+            subname: attachment.author_subname,
+            icon: attachment.author_icon
+        };
+    }
 
     if (attachment.pretext) {
         response.pretext = reformat_message_text(attachment.pretext);
