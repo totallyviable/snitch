@@ -603,9 +603,14 @@ function sanitized_message_attachment_file(file){
 
     var response = {
         name: file.title,
-        full_res: "/file/" + file.id + "/url_private." + file.filetype,
-        low_res: "/file/" + file.id + "/thumb_360." + file.filetype,
+        full_res: "/file/" + file.id + "/url_private." + file.filetype
     };
+
+    if (file.mode == "hosted" && s.startsWith(file.mimetype, "image/")) {
+        response.low_res = "/file/" + file.id + "/thumb_360." + file.filetype;
+    } else {
+        response.download_url = "/file/" + file.id + "/url_private_download." + file.filetype;
+    }
 
     var byline = ["uploaded"];
 
@@ -635,6 +640,8 @@ function sanitized_message_attachment_file(file){
 
 function sanitized_message_attachment_inline(attachment){
     var response = _.pick(attachment, "color", "pretext", "fields", "image_url", "thumb_url");
+
+    // TODO: prefer video_html (over thumb_url)
 
     response.inline_title = attachment.title;
     response.inline_title_link = attachment.title_link;

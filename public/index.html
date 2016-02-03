@@ -110,15 +110,21 @@
                                         {{# byline }}
                                             <div class="text upload_byline">
                                                 {{ byline }}:
-                                                <a href="{{ high_res }}">{{ name }}</a>
+                                                <a href="{{ full_res }}" target="_blank">{{ name }}</a>
                                             </div>
                                         {{/ byline }}
 
                                         {{# low_res }}
                                             <div class="upload">
-                                                <img src="{{ low_res }}" class="img-responsive img-rounded">
+                                                <a href="{{ full_res }}" target="_blank"><img src="{{ low_res }}" class="img-responsive img-rounded"></a>
                                             </div>
                                         {{/ low_res }}
+
+                                        {{# download_url }}
+                                            <div class="download">
+                                                <a href="{{ download_url }}" target="_blank">Download original</a>
+                                            </div>
+                                        {{/ download_url }}
 
                                         {{# initial_comment }}
                                             <div class="text initial_comment">
