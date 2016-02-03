@@ -15,6 +15,7 @@
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js"></script>
         <script src="//cdn.rawgit.com/iamcal/js-emoji/e93c4cb/lib/emoji.min.js"></script>
 
         <script>
@@ -78,32 +79,119 @@
             </div>
         </div>
 
-        <script type="text/template" id="message_line">
+        <script id="template_divider" type="x-tmpl-mustache">
+            <div class="row divider">
+                <div class="col-md-8 col-md-offset-2 contents"></div>
+            </div>
+        </script>
+
+        <script id="template_message" type="x-tmpl-mustache">
             <div class="row message">
                 <div class="col-md-8 col-md-offset-2">
                     <div class="flexbox">
                         <div style="min-width:65px;">
-                            <img src="<%= avatar || 'https://slack.com/img/slack_hash_128.v1442100037.png' %>" class="avatar"/>
+                            <img src="{{ avatar }}" class="avatar"/>
                         </div>
 
                         <div>
                             <div class="meta">
-                                <span class="username"><%= username %></span>
-                                <span class="channel"><%= channel %></span>
-                                <% if (is_bot) { %><span class="is_bot">BOT</span><% } %>
-                                <span class="timestamp"><%= timestamp %></span>
+                                <span class="username">{{ username }}</span>
+                                <span class="channel">{{ channel }}</span>
+                                {{# is_bot}}<span class="is_bot">BOT</span>{{/ is_bot }}
+                                <span class="timestamp">{{ ts }}</span>
                             </div>
 
-                            <div class="text">
-                                <%= text %>
-                            </div>
+                            {{# text }}
+                                <div class="text">
+                                    {{ text }}
+                                </div>
+                            {{/ text }}
+
+                            {{# attachments }}
+                                <div class="attachment">
+                                    {{# file }}
+                                        {{# byline }}
+                                            <div class="text upload_byline">
+                                                {{ byline }}:
+                                                <a href="{{ high_res }}">{{ name }}</a>
+                                            </div>
+                                        {{/ byline }}
+
+                                        {{# low_res }}
+                                            <div class="upload">
+                                                <img src="{{ low_res }}" class="img-responsive">
+                                            </div>
+                                        {{/ low_res }}
+
+                                        {{# initial_comment }}
+                                            <div class="text initial_comment">
+                                                {{ initial_comment }}
+                                            </div>
+                                        {{/ initial_comment }}
+                                    {{/ file }}
+
+                                    {{# inline }}
+                                        {{# pretext }}
+                                            <div class="text">
+                                                {{ pretext }}
+                                            </div>
+                                        {{/ pretext }}
+
+                                        <blockquote class="wrapper" {{# color }}style="border-left-color: {{ color }}"{{/ color }}>
+                                            {{# thumb_url }}
+                                                <div class="thumb pull-right">
+                                                    <img src="{{ thumb_url }}">
+                                                </div>
+                                            {{/ thumb_url }}
+
+                                            {{! TODO: author_name, author_subname, author_icon }}
+
+                                            {{# title }}
+                                                <div class="title">
+                                                    {{# title_link }}<a href="{{ title_link }}">{{/ title_link }}{{ title }}{{# title_link }}</a>{{/ title_link }}
+                                                </div>
+                                            {{/ title }}
+
+                                            {{# fields.length }}
+                                                <div class="fields row">
+                                                    {{# fields }}
+                                                        <div class="field {{#short}}col-xs-6{{/short}} {{^short}}col-xs-12{{/short}}">
+                                                            {{# title }}
+                                                                <div class="title">
+                                                                    {{ title }}
+                                                                </div>
+                                                            {{/ title}}
+                                                            {{# value }}
+                                                                <div class="text">
+                                                                    {{ value }}
+                                                                </div>
+                                                            {{/ value }}
+                                                        </div>
+                                                    {{/ fields }}
+                                                </div>
+                                            {{/ fields.length }}
+
+                                            {{# image_url }}
+                                                <div class="upload">
+                                                    <img src="{{ image_url }}" class="img-responsive">
+                                                </div>
+                                            {{/ image_url }}
+
+                                            {{# text }}
+                                                <div class="text">
+                                                    {{ text }}
+                                                </div>
+                                            {{/ text }}
+                                        </blockquote>
+                                    {{/ inline }}
+                                </div>
+                            {{/ attachments }}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row divider">
-                <div class="col-md-8 col-md-offset-2 contents"></div>
-            </div>
+
+            {{> divider}}
         </script>
 
         <script>
@@ -170,7 +258,9 @@
                     $("#message_container").show();
 
                     // emojify
-                    message.text = emoji.replace_colons(message.text);
+                    if (message.text) {
+                        message.text = emoji.replace_colons(message.text);
+                    }
 
                     var scroll_was_at_bottom = scroll_is_at_bottom() || message.is_backfill;
 
