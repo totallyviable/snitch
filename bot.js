@@ -699,7 +699,7 @@ function reformat_message_text(text) {
 
                     break;
                 default:
-                    if (label && -1 !== link.indexOf(label)) {
+                    if (label) {
                         return "<a href='" + link + "'>" + label + "</a>";
                     } else {
                         return "<a href='" + link + "'>" + link.replace(/^mailto:/, '') + "</a>";
